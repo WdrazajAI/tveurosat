@@ -107,9 +107,14 @@ export default function FAQPage() {
             <p className="text-muted-foreground mb-6">
               Skontaktuj się z nami — chętnie odpowiemy na Twoje pytania.
             </p>
-            <Button asChild>
-              <Link to="/kontakt">Napisz do nas</Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button asChild>
+                <Link to="/kontakt">Napisz do nas</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/dokumenty">Cenniki i regulaminy</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

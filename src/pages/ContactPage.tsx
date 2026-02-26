@@ -1,5 +1,6 @@
 import { motion } from "framer-motion"
-import { Phone, Mail, MapPin, Clock } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, FileText } from "lucide-react"
+import { Link } from "react-router-dom"
 import PageHero from "@/components/layout/PageHero"
 import ContactForm from "@/components/forms/ContactForm"
 
@@ -83,6 +84,20 @@ export default function ContactPage() {
                   )
                 })}
               </div>
+
+              {/* Documents link */}
+              <Link
+                to="/dokumenty"
+                className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-foreground">Dokumenty do pobrania</div>
+                  <div className="text-xs text-muted-foreground">Cenniki, regulaminy, formularze</div>
+                </div>
+              </Link>
             </motion.div>
 
             {/* Right - Contact Form */}

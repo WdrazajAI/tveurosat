@@ -117,6 +117,14 @@ export default function Footer() {
                   Strefa Klienta
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/dokumenty"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  Dokumenty
+                </Link>
+              </li>
             </ul>
           </div>
 

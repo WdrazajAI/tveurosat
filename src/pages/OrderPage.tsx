@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import PageHero from "@/components/layout/PageHero"
 import OrderForm from "@/components/forms/OrderForm"
@@ -29,6 +29,14 @@ export default function OrderPage() {
               <OrderForm defaultPackageId={packageId} />
             </div>
           </motion.div>
+
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Szczegoly oferty i regulamin dostepne w{" "}
+            <Link to="/dokumenty" className="text-primary hover:underline">
+              dokumentach
+            </Link>
+            .
+          </p>
         </div>
       </section>
     </>
