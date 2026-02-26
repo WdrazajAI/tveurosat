@@ -27,7 +27,7 @@ const itemVariants = {
 
 export default function TrustBar() {
   return (
-    <section className="py-8 border-y border-border/50 bg-white/50">
+    <section className="py-8 bg-transparent">
       <motion.div
         className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-center gap-8 sm:gap-12"
         variants={containerVariants}

@@ -60,14 +60,16 @@ const itemVariants = {
 
 export default function ServicesSection() {
   return (
-    <motion.section
+    <section
       id="uslugi"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.6 }}
-      className="py-24 sm:py-32 bg-[hsl(210,20%,98%)]"
+      className="py-24 sm:py-32 bg-transparent relative overflow-hidden"
     >
+      {/* Decorative Geometric Shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute bottom-20 left-[3%] w-40 h-40 bg-primary/[0.03] -rotate-12 rounded-2xl" />
+        <div className="absolute top-[40%] left-[15%] w-2.5 h-2.5 bg-secondary/60 rounded-full" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto">
@@ -97,7 +99,7 @@ export default function ServicesSection() {
               <motion.div
                 key={index}
                 variants={itemVariants}
-                className="group relative p-6 sm:p-8 rounded-2xl bg-white border border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-l-4 border-l-primary"
+                className="group relative p-6 sm:p-8 rounded-2xl bg-card border border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-l-4 border-l-primary"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
                   <IconComponent className="w-6 h-6 text-primary" />
@@ -113,6 +115,6 @@ export default function ServicesSection() {
           })}
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   )
 }

@@ -24,28 +24,39 @@
   --border: 220 20% 90%;
   --input: 214 32% 91%;
   --ring: 220 100% 50%;
-  --chart-1: 220 100% 50%;
-  --chart-2: 28 100% 50%;
-  --chart-3: 210 20% 40%;
-  --chart-4: 220 80% 60%;
-  --chart-5: 28 80% 60%;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-primary: 220 100% 50%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 210 40% 96%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-border: 214 32% 91%;
-  --sidebar-ring: 220 100% 50%;
-
   /* Variant-specific tokens for Signal Grid */
   --hero-gradient-start: 220 100% 50%;
   --hero-gradient-mid: 220 80% 40%;
   --hero-gradient-end: 220 60% 30%;
   --section-dark-bg: 222 47% 11%;
-  --section-dark-text: 210 20% 98%;
+  --section-dark-text: 210 20% 96%;
   --accent-glow: 220 100% 50%;
   --orange-soft: 28 100% 95%;
+}
+
+.dark {
+  --background: 222 30% 12%;
+  --foreground: 210 20% 92%;
+  --card: 222 25% 15%;
+  --card-foreground: 210 20% 92%;
+  --popover: 222 25% 15%;
+  --popover-foreground: 210 20% 92%;
+  --primary: 220 100% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 28 100% 55%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 220 15% 20%;
+  --muted-foreground: 215 16% 65%;
+  --accent: 220 15% 20%;
+  --accent-foreground: 210 20% 92%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 15% 22%;
+  --input: 220 15% 20%;
+  --ring: 220 100% 55%;
+  --section-dark-bg: 222 35% 8%;
+  --section-dark-text: 210 20% 92%;
+  --orange-soft: 28 100% 15%;
 }
 
 @theme inline {
@@ -68,19 +79,8 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
-  --color-sidebar-background: hsl(var(--sidebar-background));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-section-dark-bg: hsl(var(--section-dark-bg));
+  --color-section-dark-text: hsl(var(--section-dark-text));
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);

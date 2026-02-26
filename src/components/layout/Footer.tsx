@@ -1,20 +1,21 @@
+import { Link } from "react-router-dom"
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-[hsl(222,47%,11%)] text-[hsl(210,20%,96%)] pt-16 pb-8">
+    <footer className="bg-section-dark-bg text-section-dark-text pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Column 1 - Logo & Description */}
           <div>
-            <div className="flex items-center mb-4">
+            <Link to="/" className="flex items-center mb-4">
               <span className="text-xl font-extrabold tracking-tight">
                 <span className="text-primary">TV-EURO</span>
                 <span className="text-secondary">-SAT</span>
               </span>
-            </div>
+            </Link>
             <p className="text-sm text-white/60 leading-relaxed mb-4">
               Dostawca internetu światłowodowego i telewizji kablowej w regionie
               Małkini.
@@ -44,36 +45,36 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="#uslugi"
+                <Link
+                  to="/pakiety/internet"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Internet
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#pakiety"
+                <Link
+                  to="/pakiety/telewizja"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Telewizja
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#pakiety"
+                <Link
+                  to="/pakiety"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Pakiety
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#pakiety"
+                <Link
+                  to="/dokumenty"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Cennik
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -85,36 +86,36 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="#o-nas"
+                <Link
+                  to="/aktualnosci"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
-                  O nas
-                </a>
+                  Aktualności
+                </Link>
               </li>
               <li>
-                <a
-                  href="#kontakt"
+                <Link
+                  to="/faq"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/kontakt"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Kontakt
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/strefa-klienta"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
-                  Regulamin
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  Polityka prywatności
-                </a>
+                  Strefa Klienta
+                </Link>
               </li>
             </ul>
           </div>
@@ -155,7 +156,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/40">
-          <p>© {currentYear} TV-EURO-SAT. Wszelkie prawa zastrzeżone.</p>
+          <p>&copy; {currentYear} TV-EURO-SAT. Wszelkie prawa zastrzeżone.</p>
           <p>Stworzone z pasją w Małkini</p>
         </div>
       </div>

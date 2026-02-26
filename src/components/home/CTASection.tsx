@@ -1,13 +1,21 @@
-import { motion } from "framer-motion"
-import { ArrowRight, Wrench, FileCheck, Zap } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Wrench, FileCheck, Zap } from "lucide-react"
+import CoverageForm from "@/components/coverage/CoverageForm"
+import CoverageResult from "@/components/coverage/CoverageResult"
+import type { CoverageResult as CoverageResultType } from "@/types"
 
 export default function CTASection() {
+  const [result, setResult] = useState<CoverageResultType | null>(null)
+
   return (
-    <section
-      id="cta-section"
-      className="py-24 sm:py-32 bg-white"
-    >
+    <section id="cta-section" className="py-24 sm:py-32 bg-card/20 relative overflow-hidden">
+      {/* Decorative Geometric Shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-16 left-[5%] w-72 h-72 border-2 border-primary/10 rotate-45 rounded-3xl hidden md:block" />
+        <div className="absolute bottom-10 right-[10%] w-3 h-3 bg-secondary rounded-full" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left - Text Content */}
@@ -42,67 +50,31 @@ export default function CTASection() {
             </div>
           </motion.div>
 
-          {/* Right - Form Area */}
+          {/* Right - Coverage Form */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
-            className="rounded-2xl bg-[hsl(210,20%,98%)] border border-border/50 p-8 sm:p-10"
+            className="rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg shadow-primary/5 p-6 sm:p-8 lg:p-10"
           >
-            <h3 className="text-xl font-semibold mb-6">
-              Wprowadź swój adres
-            </h3>
-            <form className="space-y-4">
-              <div>
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Miejscowość
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  placeholder="np. Małkinia Górna"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="street"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Ulica
-                </label>
-                <input
-                  type="text"
-                  id="street"
-                  placeholder="np. Główna"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="number"
-                  className="block text-sm font-medium mb-2"
-                >
-                  Numer domu
-                </label>
-                <input
-                  type="text"
-                  id="number"
-                  placeholder="np. 12A"
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full mt-4 h-13 bg-primary text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-              >
-                Sprawdź Dostępność <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
+            <AnimatePresence mode="wait">
+              {!result ? (
+                <div key="form">
+                  <h3 className="text-xl font-semibold mb-6">
+                    Wprowadź swój adres
+                  </h3>
+                  <CoverageForm onResult={setResult} />
+                </div>
+              ) : (
+                <div key="result">
+                  <CoverageResult
+                    result={result}
+                    onReset={() => setResult(null)}
+                  />
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
