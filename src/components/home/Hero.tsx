@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { ArrowRight, Play, Wifi, Tv, Phone } from "lucide-react"
+import { ArrowRight, MessageCircle, Wifi, Tv, Phone } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 
@@ -56,8 +56,8 @@ export default function Hero() {
                   className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 px-6 sm:px-8 h-12 sm:h-14 text-base font-semibold rounded-xl whitespace-nowrap"
                   asChild
                 >
-                  <Link to="/sprawdz-dostepnosc" className="inline-flex items-center gap-2">
-                    Sprawdź Dostępność <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                  <Link to="/pakiety" className="inline-flex items-center gap-2">
+                    Sprawdź Ofertę <ArrowRight className="h-4 w-4 flex-shrink-0" />
                   </Link>
                 </Button>
                 <Button
@@ -66,8 +66,8 @@ export default function Hero() {
                   className="border-2 border-secondary text-secondary hover:bg-secondary/10 px-6 sm:px-8 h-12 sm:h-14 text-base font-semibold rounded-xl whitespace-nowrap"
                   asChild
                 >
-                  <Link to="/pakiety/telewizja" className="inline-flex items-center gap-2">
-                    Zobacz Pakiety TV <Play className="h-4 w-4 flex-shrink-0" />
+                  <Link to="/kontakt" className="inline-flex items-center gap-2">
+                    Kontakt <MessageCircle className="h-4 w-4 flex-shrink-0" />
                   </Link>
                 </Button>
               </motion.div>

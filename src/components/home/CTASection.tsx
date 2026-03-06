@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Wrench, FileCheck, Zap } from "lucide-react"
 import CoverageForm from "@/components/coverage/CoverageForm"
 import CoverageResult from "@/components/coverage/CoverageResult"
-import type { CoverageResult as CoverageResultType } from "@/types"
+import type { CoverageCheckResult } from "@/types"
 
 export default function CTASection() {
-  const [result, setResult] = useState<CoverageResultType | null>(null)
+  const [result, setResult] = useState<CoverageCheckResult | null>(null)
 
   return (
-    <section id="cta-section" className="py-24 sm:py-32 bg-card/20 relative overflow-hidden">
+    <section id="cta-section" className="py-16 sm:py-20 bg-card/20 relative overflow-hidden">
       {/* Decorative Geometric Shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-16 left-[5%] w-72 h-72 border-2 border-primary/10 rotate-45 rounded-3xl hidden md:block" />
@@ -26,10 +26,10 @@ export default function CTASection() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1]">
-              Sprawdź Dostępność w Twojej Lokalizacji
+              Czy jesteśmy w Twoim zasięgu?
             </h2>
             <p className="mt-4 text-base sm:text-lg leading-relaxed text-muted-foreground">
-              Wprowadź swój adres, a sprawdzimy czy nasze usługi są dostępne w
+              Wprowadź swój adres, a sprawdzimy jakie usługi są dostępne w
               Twojej okolicy. Zajmie to tylko chwilę.
             </p>
 

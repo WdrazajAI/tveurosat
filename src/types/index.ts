@@ -1,45 +1,90 @@
-// Package types
-export type PackageType = "internet" | "tv" | "combo"
-export type TVTechnology = "iptv" | "dvbt" | "dvbt_iptv"
+// === Technology Categories ===
+export type TechCategory = "gpon" | "bsa" | "docsis" | "radio"
 
-export interface Package {
-  id: string
+// === Coverage Types ===
+export interface CoverageCity {
   name: string
-  type: PackageType
-  tagline: string
-  speed?: string
-  channels?: number
-  price: number
-  priceNote: string
-  features: string[]
-  featured: boolean
-  tvTechnology?: TVTechnology
-  locationRestriction?: string
-  order: number
+  normalized: string
+  hasStreets: boolean
 }
 
-// Coverage types
-export interface CoverageArea {
-  id: string
-  city: string
-  cityNormalized: string
-  street: string
-  streetNormalized: string
-  buildingRange?: { from: number; to: number }
-  specificBuildings?: string[]
-  technology: TVTechnology
-  zone: string
-  availableSpeedTiers: string[]
+export interface AddressTech {
+  t: TechCategory
+  d: number // maxDown Mbps
 }
 
-export interface CoverageResult {
-  covered: boolean
-  area?: CoverageArea
-  technology?: TVTechnology
+export interface CoverageAddress {
+  s: string // street display name
+  sn: string // street normalized
+  b: string // building number
+  techs: AddressTech[]
+  tc?: string // tariff code (future use)
+}
+
+export interface CoverageDatabase {
+  version: string
+  generatedAt: string
+  stats: {
+    totalAddresses: number
+    cities: number
+    technologies: Record<string, number>
+    radioOnly: number
+  }
+  cities: CoverageCity[]
+  addresses: Record<string, CoverageAddress[]>
+}
+
+export interface CoverageCheckResult {
+  status: "covered" | "radio_only" | "not_covered"
+  address: {
+    city: string
+    street: string
+    building: string
+  }
+  technologies: TechCategory[]
+  maxSpeeds: Partial<Record<TechCategory, { down: number; up: number }>>
   message: string
 }
 
-// News types
+// === Package Types ===
+export type ContractPeriod = "24m" | "12m" | "indefinite"
+
+export interface PricingOption {
+  period: ContractPeriod
+  periodLabel: string
+  monthlyPrice: number
+  activationFee: number
+  installationFee: number
+}
+
+export interface InternetPackage {
+  id: string
+  name: string
+  technology: TechCategory
+  tagline: string
+  speedDown: number
+  speedUp: number
+  features: string[]
+  pricing: PricingOption[]
+  featured: boolean
+  order: number
+  tariffCode?: string
+}
+
+export interface TVPackage {
+  id: string
+  name: string
+  type: "iptv" | "cable"
+  tagline: string
+  channels: number
+  features: string[]
+  pricing: PricingOption[]
+  featured: boolean
+  order: number
+  tariffCode?: string
+}
+
+// === News types ===
 export type NewsCategory = "promotion" | "news" | "expansion" | "maintenance"
 
 export interface NewsArticle {
@@ -54,7 +99,7 @@ export interface NewsArticle {
   featured: boolean
 }
 
-// FAQ types
+// === FAQ types ===
 export type FAQCategory = "general" | "technical" | "billing" | "installation"
 
 export interface FAQItem {
@@ -65,7 +110,7 @@ export interface FAQItem {
   order: number
 }
 
-// Document types
+// === Document types ===
 export type DocumentCategory = "pricelist" | "regulation" | "form" | "technical"
 
 export interface DocumentItem {

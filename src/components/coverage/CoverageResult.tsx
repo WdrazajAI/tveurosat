@@ -1,18 +1,35 @@
 import { motion } from "framer-motion"
-import { CheckCircle, Radio, Tv } from "lucide-react"
-import { Link } from "react-router-dom"
+import { CheckCircle, Zap, Cable, Wifi } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import type { CoverageResult as CoverageResultType } from "@/types"
+import { technologyMeta } from "@/data/packages"
+import type { CoverageCheckResult, TechCategory } from "@/types"
 import OutOfCoverageInfo from "./OutOfCoverageInfo"
+import RadioOnlyNotice from "./RadioOnlyNotice"
 
 interface CoverageResultProps {
-  result: CoverageResultType
+  result: CoverageCheckResult
   onReset: () => void
 }
 
-export default function CoverageResult({ result, onReset }: CoverageResultProps) {
-  if (!result.covered) {
+const techIcons: Record<TechCategory, React.ElementType> = {
+  gpon: Zap,
+  bsa: Cable,
+  docsis: Wifi,
+  radio: Wifi,
+}
+
+export default function CoverageResult({
+  result,
+  onReset,
+}: CoverageResultProps) {
+  const navigate = useNavigate()
+  if (result.status === "not_covered") {
     return <OutOfCoverageInfo message={result.message} onReset={onReset} />
+  }
+
+  if (result.status === "radio_only") {
+    return <RadioOnlyNotice result={result} onReset={onReset} />
   }
 
   return (
@@ -29,58 +46,72 @@ export default function CoverageResult({ result, onReset }: CoverageResultProps)
           <p className="font-semibold text-green-700 dark:text-green-400">
             Twój adres jest w zasięgu!
           </p>
-          <p className="text-sm text-muted-foreground mt-1">{result.message}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {result.address.city}
+            {result.address.street && `, ${result.address.street}`}{" "}
+            {result.address.building}
+          </p>
         </div>
       </div>
 
-      {/* Technology Badge */}
-      {result.technology === "dvbt_iptv" && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-start gap-3 p-4 rounded-xl bg-secondary/10 border border-secondary/20"
-        >
-          <Tv className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-secondary">
-              DVB-T + IPTV dostępne
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              W Twojej lokalizacji dostępna jest zarówno telewizja tradycyjna DVB-T, jak i nowoczesna IPTV. Masz szerszy wybór pakietów!
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {result.technology === "iptv" && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Radio className="h-4 w-4 text-primary" />
-          <span>Technologia: <strong className="text-foreground">IPTV</strong></span>
-        </div>
-      )}
-
-      {/* Available Speed Tiers */}
-      {result.area?.availableSpeedTiers && (
-        <div>
-          <h4 className="text-sm font-medium mb-3">Dostępne prędkości:</h4>
-          <div className="flex flex-wrap gap-2">
-            {result.area.availableSpeedTiers.map((tier) => (
-              <span
-                key={tier}
-                className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary"
+      {/* Technology Badges */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium">Dostępne technologie:</h4>
+        <div className="flex flex-wrap gap-2">
+          {result.technologies.map((tech) => {
+            const meta = technologyMeta[tech]
+            const Icon = techIcons[tech]
+            return (
+              <motion.span
+                key={tech}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary"
               >
-                {tier === "1000" ? "1 Gb/s" : `${tier} Mb/s`}
-              </span>
-            ))}
+                <Icon className="h-3.5 w-3.5" />
+                {meta.shortLabel}
+              </motion.span>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Max speeds per technology */}
+      {Object.entries(result.maxSpeeds).length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Maksymalne prędkości:</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {result.technologies.map((tech) => {
+              const speeds = result.maxSpeeds[tech]
+              if (!speeds) return null
+              const meta = technologyMeta[tech]
+              return (
+                <div
+                  key={tech}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50 text-sm"
+                >
+                  <span className="text-muted-foreground">
+                    {meta.shortLabel}
+                  </span>
+                  <span className="font-semibold">
+                    {speeds.down >= 1000
+                      ? `${speeds.down / 1000} Gb/s`
+                      : `${speeds.down} Mb/s`}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <Button asChild className="flex-1">
-          <Link to="/pakiety">Zobacz pakiety</Link>
+        <Button
+          className="flex-1"
+          onClick={() => navigate("/pakiety", { state: { coverageResult: result } })}
+        >
+          Zobacz pakiety
         </Button>
         <Button variant="outline" onClick={onReset} className="flex-1">
           Sprawdź inny adres

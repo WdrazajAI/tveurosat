@@ -1,14 +1,33 @@
 import { motion } from "framer-motion"
-import { Check, ArrowRight } from "lucide-react"
+import { ArrowRight, Zap, Cable, Signal, Router } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { internetPackages, tvPackages, comboPackages } from "@/data/packages"
 
-// Show one highlighted package from each category
-const previewPackages = [
-  { ...internetPackages.find((p) => p.featured)!, categoryLabel: "Internet Kablowy", categoryLink: "/pakiety/internet" },
-  { ...tvPackages.find((p) => p.featured)!, categoryLabel: "Telewizja Kablowa", categoryLink: "/pakiety/telewizja" },
-  { ...comboPackages.find((p) => p.featured)!, categoryLabel: "Internet + TV", categoryLink: "/pakiety" },
+const technologies = [
+  {
+    icon: Zap,
+    label: "Światłowód GPON",
+    speed: "do 1 Gb/s",
+    description:
+      "Bezpośrednie połączenie światłowodowe — najwyższe prędkości i stabilność sygnału. Idealne do streamingu 4K, pracy zdalnej i gier online.",
+    highlights: ["Własna infrastruktura", "Symetryczny upload", "Najniższy ping"],
+  },
+  {
+    icon: Cable,
+    label: "Światłowód BSA",
+    speed: "do 600 Mb/s",
+    description:
+      "Internet światłowodowy realizowany przez sieć Orange z pełną obsługą TV-EURO-SAT. Dostępny tam, gdzie nie dociera nasza sieć GPON.",
+    highlights: ["Sieć Orange", "Szeroki zasięg", "Szybki internet"],
+  },
+  {
+    icon: Router,
+    label: "Internet Kablowy",
+    speed: "do 250 Mb/s",
+    description:
+      "Sprawdzony internet kablowy DOCSIS z możliwością podłączenia telewizji kablowej na jednym kablu. Prosta instalacja.",
+    highlights: ["Sprawdzona technologia", "TV kablowa w pakiecie", "Łatwa instalacja"],
+  },
 ]
 
 const containerVariants = {
@@ -45,18 +64,18 @@ export default function PackagesSection() {
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-            Pakiety
+            Nasze Technologie
           </span>
           <h2 className="mt-6 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.1] text-white">
-            Internet i Telewizja dla Ciebie
+            Jak dostarczamy internet
           </h2>
           <p className="mt-4 text-base sm:text-lg leading-relaxed text-white/70">
-            Transparentne ceny, brak ukrytych opłat. Internet Kablowy GPON,
-            Telewizja Kablowa IPTV i pakiety łączone.
+            Wykorzystujemy różne technologie, aby dotrzeć do każdego klienta.
+            Sprawdź, co jest dostępne pod Twoim adresem.
           </p>
         </div>
 
-        {/* Preview Packages Grid */}
+        {/* Technologies Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -64,80 +83,62 @@ export default function PackagesSection() {
           viewport={{ once: true, margin: "-100px" }}
           className="max-w-5xl mx-auto mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {previewPackages.map((pkg, index) => (
+          {technologies.map(({ label, icon: Icon, speed, description, highlights }) => (
             <motion.div
-              key={index}
+              key={label}
               variants={itemVariants}
-              className="relative rounded-2xl bg-white/[0.08] backdrop-blur-sm border border-white/15 p-6 sm:p-8 hover:bg-white/[0.14] transition-all duration-300 shadow-lg shadow-black/10 text-center flex flex-col"
+              className="relative rounded-2xl bg-white/[0.08] backdrop-blur-sm border border-white/15 p-6 sm:p-8 hover:bg-white/[0.14] transition-all duration-300 shadow-lg shadow-black/10 flex flex-col"
             >
-              {/* Category Label */}
-              <div className="text-xs uppercase tracking-widest text-white/50 mb-3">
-                {pkg.categoryLabel}
+              {/* Icon + Label */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-sm uppercase tracking-widest text-primary font-semibold">
+                  {label}
+                </h3>
               </div>
 
-              {/* Package Info */}
-              <div className="text-sm uppercase tracking-widest text-primary font-semibold">
-                {pkg.name}
+              {/* Speed */}
+              <div className="text-3xl font-extrabold text-white mb-3">
+                {speed}
               </div>
 
-              {/* Speed / Channels — fixed height for alignment */}
-              <div className="min-h-[4.5rem] flex flex-col justify-center">
-                {pkg.speed && (
-                  <div className="text-3xl font-extrabold text-white mt-2">
-                    {pkg.speed}
-                  </div>
-                )}
-                {pkg.channels && !pkg.speed && (
-                  <div className="text-3xl font-extrabold text-white mt-2">
-                    {pkg.channels}+ kanałów
-                  </div>
-                )}
-                {pkg.speed && pkg.channels && (
-                  <div className="text-sm text-white/60 mt-1">
-                    + {pkg.channels}+ kanałów TV
-                  </div>
-                )}
-              </div>
-
-              {/* Price */}
-              <div className="mt-4">
-                <span className="text-4xl font-extrabold text-white">
-                  {pkg.price}
-                </span>
-                <span className="text-lg text-white/60"> {pkg.priceNote}</span>
-              </div>
+              {/* Description */}
+              <p className="text-sm text-white/60 leading-relaxed mb-5">
+                {description}
+              </p>
 
               {/* Divider */}
-              <div className="h-px bg-white/10 my-5" />
+              <div className="h-px bg-white/10 mb-5" />
 
-              {/* Features (show first 3) */}
-              <ul className="space-y-2.5 inline-flex flex-col items-start flex-1">
-                {pkg.features.slice(0, 3).map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-2.5">
-                    <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    <span className="text-sm text-white/80">{feature}</span>
+              {/* Highlights */}
+              <ul className="space-y-2.5 flex-1">
+                {highlights.map((highlight) => (
+                  <li key={highlight} className="flex items-center gap-2.5">
+                    <Signal className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                    <span className="text-sm text-white/80">{highlight}</span>
                   </li>
                 ))}
               </ul>
-
-              {/* CTA - link to category */}
-              <div className="mt-auto pt-6">
-                <Button
-                  className="w-full bg-primary hover:bg-primary/90 text-white h-11 rounded-xl font-semibold"
-                  asChild
-                >
-                  <Link to={pkg.categoryLink}>Zobacz pakiety</Link>
-                </Button>
-              </div>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* See All CTA */}
+        {/* CTA */}
         <div className="text-center mt-10">
-          <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 hover:text-white" asChild>
-            <Link to="/pakiety" className="inline-flex items-center gap-2 whitespace-nowrap">
-              Zobacz pełną ofertę <ArrowRight className="h-4 w-4 flex-shrink-0" />
+          <Button
+            variant="outline"
+            size="lg"
+            className="border-white/30 text-white hover:bg-white/20 hover:border-white/50 hover:text-white"
+            asChild
+          >
+            <Link
+              to="/pakiety"
+              className="inline-flex items-center gap-2 whitespace-nowrap"
+            >
+              Sprawdź co jest dostępne pod Twoim adresem{" "}
+              <ArrowRight className="h-4 w-4 flex-shrink-0" />
             </Link>
           </Button>
         </div>

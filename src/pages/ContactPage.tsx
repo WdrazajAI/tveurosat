@@ -8,19 +8,25 @@ const contactInfo = [
   {
     icon: Phone,
     label: "Telefon",
-    value: "+48 123 456 789",
-    href: "tel:+48123456789",
+    value: "+48 22 473 02 43",
+    href: "tel:+48224730243",
+  },
+  {
+    icon: Phone,
+    label: "Telefon komórkowy",
+    value: "+48 604 132 157",
+    href: "tel:+48604132157",
   },
   {
     icon: Mail,
     label: "E-mail",
-    value: "kontakt@tveurosat.pl",
-    href: "mailto:kontakt@tveurosat.pl",
+    value: "biuro@tveurosat.net",
+    href: "mailto:biuro@tveurosat.net",
   },
   {
     icon: MapPin,
     label: "Adres",
-    value: "ul. Przykładowa 1, 07-320 Małkinia Górna",
+    value: "Małkinia Górna, Mazowieckie",
   },
   {
     icon: Clock,

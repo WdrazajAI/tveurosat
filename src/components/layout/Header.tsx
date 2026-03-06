@@ -50,10 +50,11 @@ export default function Header() {
             >
               {/* Logo */}
               <Link to="/" className="flex items-center">
-                <span className="text-xl font-extrabold tracking-tight">
-                  <span className="text-primary">TV-EURO</span>
-                  <span className="text-secondary">-SAT</span>
-                </span>
+                <img
+                  src="/logo.svg"
+                  alt="TV-EURO-SAT"
+                  className="h-7 sm:h-8 w-auto dark:brightness-0 dark:invert"
+                />
               </Link>
 
               {/* Desktop Navigation */}
@@ -80,7 +81,7 @@ export default function Header() {
               <div className="flex items-center gap-2 sm:gap-3">
                 <ThemeToggle />
                 <Button size="sm" className="hidden sm:inline-flex" asChild>
-                  <Link to="/sprawdz-dostepnosc">Sprawdź Dostępność</Link>
+                  <Link to="/pakiety">Sprawdź Ofertę</Link>
                 </Button>
                 <button
                   className="md:hidden p-2"
@@ -153,7 +154,7 @@ export default function Header() {
                 className="mt-4 w-full"
               >
                 <Button className="w-full" asChild>
-                  <Link to="/sprawdz-dostepnosc">Sprawdź Dostępność</Link>
+                  <Link to="/pakiety">Sprawdź Ofertę</Link>
                 </Button>
               </motion.div>
             </nav>

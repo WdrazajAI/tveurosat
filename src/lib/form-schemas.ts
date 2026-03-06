@@ -32,7 +32,10 @@ export const contactSubjects = [
 ]
 
 export const orderFormSchema = z.object({
-  packageId: z.string().min(1, "Wybierz pakiet"),
+  internetPackageId: z.string().min(1, "Wybierz pakiet internetu"),
+  internetPeriod: z.string().min(1),
+  tvPackageId: z.string().optional(),
+  tvPeriod: z.string().optional(),
   name: z
     .string()
     .min(2, "Imię musi mieć co najmniej 2 znaki")
@@ -42,14 +45,18 @@ export const orderFormSchema = z.object({
     .string()
     .min(9, "Podaj poprawny numer telefonu")
     .max(20, "Numer telefonu jest za długi"),
-  street: z
-    .string()
-    .min(3, "Podaj ulicę i numer budynku")
-    .max(200, "Adres jest za długi"),
   city: z
     .string()
     .min(2, "Podaj miasto")
     .max(100, "Nazwa miasta jest za długa"),
+  street: z
+    .string()
+    .max(200, "Adres jest za długi")
+    .optional(),
+  building: z
+    .string()
+    .min(1, "Podaj numer budynku")
+    .max(20, "Numer budynku jest za długi"),
   postalCode: z
     .string()
     .regex(/^\d{2}-\d{3}$/, "Podaj kod pocztowy w formacie XX-XXX"),

@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import PageHero from "@/components/layout/PageHero"
 import CoverageForm from "@/components/coverage/CoverageForm"
 import CoverageResult from "@/components/coverage/CoverageResult"
-import type { CoverageResult as CoverageResultType } from "@/types"
+import type { CoverageCheckResult } from "@/types"
 
 export default function CoverageCheckerPage() {
-  const [result, setResult] = useState<CoverageResultType | null>(null)
+  const [result, setResult] = useState<CoverageCheckResult | null>(null)
 
   return (
     <>

@@ -1,12 +1,12 @@
 import { lazy, Suspense } from "react"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { ThemeProvider } from "@/context/ThemeContext"
+import { AuthProvider } from "@/context/AuthContext"
 import ScrollToTop from "@/components/layout/ScrollToTop"
 import RootLayout from "@/layouts/RootLayout"
 import Index from "@/pages/Index"
 
-// Lazy-loaded pages for code splitting
-const CoverageCheckerPage = lazy(() => import("@/pages/CoverageCheckerPage"))
+// Lazy-loaded public pages
 const PackagesPage = lazy(() => import("@/pages/PackagesPage"))
 const ContactPage = lazy(() => import("@/pages/ContactPage"))
 const NewsPage = lazy(() => import("@/pages/NewsPage"))
@@ -16,6 +16,20 @@ const DocumentsPage = lazy(() => import("@/pages/DocumentsPage"))
 const ClientZonePage = lazy(() => import("@/pages/ClientZonePage"))
 const OrderPage = lazy(() => import("@/pages/OrderPage"))
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"))
+
+// Lazy-loaded admin pages
+const AdminLoginPage = lazy(() => import("@/pages/admin/AdminLoginPage"))
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"))
+const DashboardPage = lazy(() => import("@/pages/admin/DashboardPage"))
+const NewsListPage = lazy(() => import("@/pages/admin/NewsListPage"))
+const NewsEditPage = lazy(() => import("@/pages/admin/NewsEditPage"))
+const FAQListPage = lazy(() => import("@/pages/admin/FAQListPage"))
+const FAQEditPage = lazy(() => import("@/pages/admin/FAQEditPage"))
+const DocumentsListPage = lazy(() => import("@/pages/admin/DocumentsListPage"))
+const DocumentEditPage = lazy(() => import("@/pages/admin/DocumentEditPage"))
+const PackagesListPage = lazy(() => import("@/pages/admin/PackagesListPage"))
+const InternetPackageEditPage = lazy(() => import("@/pages/admin/InternetPackageEditPage"))
+const TVPackageEditPage = lazy(() => import("@/pages/admin/TVPackageEditPage"))
 
 function PageLoader() {
   return (
@@ -28,15 +42,16 @@ function PageLoader() {
 function App() {
   return (
     <ThemeProvider>
+    <AuthProvider>
     <BrowserRouter>
       <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
       <Routes>
+        {/* Public site */}
         <Route element={<RootLayout />}>
           <Route path="/" element={<Index />} />
-          <Route path="/sprawdz-dostepnosc" element={<CoverageCheckerPage />} />
+          <Route path="/sprawdz-dostepnosc" element={<Navigate to="/pakiety" replace />} />
           <Route path="/pakiety" element={<PackagesPage />} />
-          <Route path="/pakiety/:tab" element={<PackagesPage />} />
           <Route path="/zamowienie" element={<OrderPage />} />
           <Route path="/kontakt" element={<ContactPage />} />
           <Route path="/aktualnosci" element={<NewsPage />} />
@@ -48,9 +63,25 @@ function App() {
           {/* ADD NEW ROUTES ABOVE THE CATCH-ALL */}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
+
+        {/* Admin panel */}
+        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="aktualnosci" element={<NewsListPage />} />
+          <Route path="aktualnosci/:id" element={<NewsEditPage />} />
+          <Route path="faq" element={<FAQListPage />} />
+          <Route path="faq/:id" element={<FAQEditPage />} />
+          <Route path="dokumenty" element={<DocumentsListPage />} />
+          <Route path="dokumenty/:id" element={<DocumentEditPage />} />
+          <Route path="pakiety" element={<PackagesListPage />} />
+          <Route path="pakiety/internet/:id" element={<InternetPackageEditPage />} />
+          <Route path="pakiety/tv/:id" element={<TVPackageEditPage />} />
+        </Route>
       </Routes>
       </Suspense>
     </BrowserRouter>
+    </AuthProvider>
     </ThemeProvider>
   )
 }

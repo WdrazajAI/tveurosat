@@ -1,31 +1,73 @@
-import type { Package, PackageType } from "@/types"
+import type {
+  InternetPackage,
+  TVPackage,
+  TechCategory,
+  PricingOption,
+} from "@/types"
 
-export const internetPackages: Package[] = [
+// Pricing helper — placeholder prices, Bartek will update later
+function pricing(
+  monthly24: number,
+  monthly12: number,
+  monthlyIndef: number,
+  activation24 = 0,
+  activation12 = 1,
+  activationIndef = 49,
+  install24 = 0,
+  install12 = 0,
+  installIndef = 99
+): PricingOption[] {
+  return [
+    {
+      period: "24m",
+      periodLabel: "Umowa 24 mies.",
+      monthlyPrice: monthly24,
+      activationFee: activation24,
+      installationFee: install24,
+    },
+    {
+      period: "12m",
+      periodLabel: "Umowa 12 mies.",
+      monthlyPrice: monthly12,
+      activationFee: activation12,
+      installationFee: install12,
+    },
+    {
+      period: "indefinite",
+      periodLabel: "Bez umowy",
+      monthlyPrice: monthlyIndef,
+      activationFee: activationIndef,
+      installationFee: installIndef,
+    },
+  ]
+}
+
+// === GPON (own infrastructure) ===
+export const gponPackages: InternetPackage[] = [
   {
-    id: "net-100",
+    id: "gpon-100",
     name: "Start",
-    type: "internet",
+    technology: "gpon",
     tagline: "Idealny na start — przeglądanie, social media, streaming",
-    speed: "100 Mb/s",
-    price: 59,
-    priceNote: "zł/mies.",
+    speedDown: 100,
+    speedUp: 30,
     features: [
       "Prędkość do 100 Mb/s",
       "Router Wi-Fi w cenie",
       "Bez limitu danych",
       "Wsparcie techniczne 24/7",
     ],
+    pricing: pricing(59, 69, 79),
     featured: false,
     order: 1,
   },
   {
-    id: "net-300",
+    id: "gpon-300",
     name: "Standard",
-    type: "internet",
+    technology: "gpon",
     tagline: "Dla rodziny — streaming 4K, praca zdalna, gry online",
-    speed: "300 Mb/s",
-    price: 89,
-    priceNote: "zł/mies.",
+    speedDown: 300,
+    speedUp: 50,
     features: [
       "Prędkość do 300 Mb/s",
       "Router Wi-Fi 6 w cenie",
@@ -33,76 +75,166 @@ export const internetPackages: Package[] = [
       "Priorytetowe wsparcie techniczne",
       "Streaming 4K bez buforowania",
     ],
+    pricing: pricing(89, 99, 109),
     featured: true,
     order: 2,
   },
   {
-    id: "net-600",
+    id: "gpon-600",
     name: "Premium",
-    type: "internet",
+    technology: "gpon",
     tagline: "Dla wymagających — granie, telepraca, wiele urządzeń",
-    speed: "600 Mb/s",
-    price: 119,
-    priceNote: "zł/mies.",
+    speedDown: 600,
+    speedUp: 100,
     features: [
       "Prędkość do 600 Mb/s",
       "Router Wi-Fi 6 w cenie",
       "Bez limitu danych",
       "Priorytetowe wsparcie VIP",
       "Symetryczny upload",
-      "Idealne do gamingu i streamingu",
     ],
+    pricing: pricing(119, 129, 139),
     featured: false,
     order: 3,
   },
   {
-    id: "net-1000",
+    id: "gpon-1000",
     name: "Ultra",
-    type: "internet",
+    technology: "gpon",
     tagline: "Maksimum mocy — bez kompromisów",
-    speed: "1 Gb/s",
-    price: 149,
-    priceNote: "zł/mies.",
+    speedDown: 1000,
+    speedUp: 500,
     features: [
       "Prędkość do 1 Gb/s",
       "Router Wi-Fi 6E w cenie",
       "Bez limitu danych",
       "Dedykowany opiekun klienta",
-      "Symetryczny upload 1 Gb/s",
+      "Symetryczny upload 500 Mb/s",
       "Gwarancja najniższego pingu",
     ],
+    pricing: pricing(149, 159, 179),
     featured: false,
     order: 4,
   },
 ]
 
-export const tvPackages: Package[] = [
+// === BSA (via Orange) ===
+export const bsaPackages: InternetPackage[] = [
   {
-    id: "tv-basic",
+    id: "bsa-100",
+    name: "Start BSA",
+    technology: "bsa",
+    tagline: "Internet światłowodowy przez sieć Orange",
+    speedDown: 100,
+    speedUp: 20,
+    features: [
+      "Prędkość do 100 Mb/s",
+      "Router Wi-Fi w cenie",
+      "Bez limitu danych",
+      "Wsparcie techniczne 24/7",
+    ],
+    pricing: pricing(65, 75, 85),
+    featured: false,
+    order: 1,
+  },
+  {
+    id: "bsa-300",
+    name: "Standard BSA",
+    technology: "bsa",
+    tagline: "Szybki internet dla rodziny przez sieć Orange",
+    speedDown: 300,
+    speedUp: 40,
+    features: [
+      "Prędkość do 300 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Streaming 4K bez buforowania",
+    ],
+    pricing: pricing(95, 105, 115),
+    featured: true,
+    order: 2,
+  },
+  {
+    id: "bsa-600",
+    name: "Premium BSA",
+    technology: "bsa",
+    tagline: "Wydajny internet światłowodowy przez sieć Orange",
+    speedDown: 600,
+    speedUp: 80,
+    features: [
+      "Prędkość do 600 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Priorytetowe wsparcie",
+    ],
+    pricing: pricing(129, 139, 149),
+    featured: false,
+    order: 3,
+  },
+]
+
+// === DOCSIS (Cable) ===
+export const docsisPackages: InternetPackage[] = [
+  {
+    id: "docsis-100",
+    name: "Start Kablowy",
+    technology: "docsis",
+    tagline: "Internet kablowy — sprawdzona technologia",
+    speedDown: 100,
+    speedUp: 10,
+    features: [
+      "Prędkość do 100 Mb/s",
+      "Router Wi-Fi w cenie",
+      "Bez limitu danych",
+      "Wsparcie techniczne 24/7",
+    ],
+    pricing: pricing(55, 65, 75),
+    featured: false,
+    order: 1,
+  },
+  {
+    id: "docsis-250",
+    name: "Standard Kablowy",
+    technology: "docsis",
+    tagline: "Solidny internet kablowy dla całej rodziny",
+    speedDown: 250,
+    speedUp: 25,
+    features: [
+      "Prędkość do 250 Mb/s",
+      "Router Wi-Fi w cenie",
+      "Bez limitu danych",
+      "Streaming HD i 4K",
+    ],
+    pricing: pricing(79, 89, 99),
+    featured: true,
+    order: 2,
+  },
+]
+
+// === TV Packages ===
+export const iptvPackages: TVPackage[] = [
+  {
+    id: "tv-iptv-basic",
     name: "TV Start",
-    type: "tv",
+    type: "iptv",
     tagline: "Podstawowa rozrywka — wiadomości, sport, filmy",
     channels: 60,
-    price: 35,
-    priceNote: "zł/mies.",
     features: [
       "60+ kanałów",
       "Kanały HD w pakiecie",
       "TVP, Polsat, TVN i więcej",
       "Przewodnik elektroniczny EPG",
     ],
+    pricing: pricing(35, 39, 45),
     featured: false,
-    tvTechnology: "iptv",
     order: 1,
   },
   {
-    id: "tv-standard",
+    id: "tv-iptv-standard",
     name: "TV Rodzinny",
-    type: "tv",
+    type: "iptv",
     tagline: "Coś dla każdego — rozbudowany pakiet kanałów",
     channels: 110,
-    price: 55,
-    priceNote: "zł/mies.",
     features: [
       "110+ kanałów",
       "Kanały premium (Canal+, HBO)",
@@ -110,18 +242,16 @@ export const tvPackages: Package[] = [
       "Nagrywanie programów (PVR)",
       "Aplikacja mobilna",
     ],
+    pricing: pricing(55, 59, 65),
     featured: true,
-    tvTechnology: "iptv",
     order: 2,
   },
   {
-    id: "tv-premium",
+    id: "tv-iptv-premium",
     name: "TV Premium",
-    type: "tv",
+    type: "iptv",
     tagline: "Pełnia rozrywki — wszystkie kanały, najlepsza jakość",
     channels: 160,
-    price: 79,
-    priceNote: "zł/mies.",
     features: [
       "160+ kanałów HD i 4K",
       "Wszystkie pakiety premium",
@@ -130,122 +260,95 @@ export const tvPackages: Package[] = [
       "Timeshift i nagrywanie",
       "3 urządzenia jednocześnie",
     ],
+    pricing: pricing(79, 85, 95),
     featured: false,
-    tvTechnology: "iptv",
     order: 3,
-  },
-  {
-    id: "tv-dvbt-basic",
-    name: "TV Klasyczna",
-    type: "tv",
-    tagline: "Tradycyjna telewizja DVB-T — prosta i niezawodna",
-    channels: 30,
-    price: 25,
-    priceNote: "zł/mies.",
-    features: [
-      "30+ kanałów DVB-T",
-      "Jakość cyfrowa HD",
-      "Bez potrzeby internetu",
-      "Prosty montaż anteny",
-    ],
-    featured: false,
-    tvTechnology: "dvbt",
-    locationRestriction: "lesna5",
-    order: 4,
   },
 ]
 
-export const comboPackages: Package[] = [
+export const cableTVPackages: TVPackage[] = [
   {
-    id: "combo-start",
-    name: "Duo Start",
-    type: "combo",
-    tagline: "Internet + TV w jednej cenie — oszczędzasz 15 zł/mies.",
-    speed: "100 Mb/s",
-    channels: 60,
-    price: 79,
-    priceNote: "zł/mies.",
+    id: "tv-cable-basic",
+    name: "TV Kablowa",
+    type: "cable",
+    tagline: "Tradycyjna telewizja kablowa — prosta i niezawodna",
+    channels: 50,
     features: [
-      "Internet 100 Mb/s",
-      "60+ kanałów TV",
-      "Router Wi-Fi w cenie",
-      "Oszczędność 15 zł vs osobne usługi",
-      "Jedna faktura",
+      "50+ kanałów",
+      "Jakość cyfrowa HD",
+      "Bez potrzeby dekodera",
+      "Prosty sygnał kablowy",
     ],
+    pricing: pricing(30, 35, 40),
     featured: false,
-    tvTechnology: "iptv",
     order: 1,
   },
-  {
-    id: "combo-family",
-    name: "Duo Rodzinny",
-    type: "combo",
-    tagline: "Najczęściej wybierany — internet i TV dla całej rodziny",
-    speed: "300 Mb/s",
-    channels: 110,
-    price: 119,
-    priceNote: "zł/mies.",
-    features: [
-      "Internet 300 Mb/s",
-      "110+ kanałów z premium",
-      "Router Wi-Fi 6 w cenie",
-      "Oszczędność 25 zł vs osobne usługi",
-      "Streaming 4K + sport",
-      "Jedna faktura",
-    ],
-    featured: true,
-    tvTechnology: "iptv",
-    order: 2,
-  },
-  {
-    id: "combo-max",
-    name: "Duo Premium",
-    type: "combo",
-    tagline: "Wszystko bez kompromisów — najszybszy net i pełna TV",
-    speed: "600 Mb/s",
-    channels: 160,
-    price: 169,
-    priceNote: "zł/mies.",
-    features: [
-      "Internet 600 Mb/s",
-      "160+ kanałów HD i 4K",
-      "Router Wi-Fi 6 w cenie",
-      "Oszczędność 29 zł vs osobne usługi",
-      "Canal+, HBO, Netflix",
-      "Dedykowane wsparcie VIP",
-    ],
-    featured: false,
-    tvTechnology: "iptv",
-    order: 3,
-  },
 ]
 
-export const allPackages: Package[] = [
-  ...internetPackages,
-  ...tvPackages,
-  ...comboPackages,
+// === Lookup helpers ===
+export const allInternetPackages: InternetPackage[] = [
+  ...gponPackages,
+  ...bsaPackages,
+  ...docsisPackages,
 ]
 
-export function getPackagesByType(type: PackageType): Package[] {
-  switch (type) {
-    case "internet":
-      return internetPackages
-    case "tv":
-      return tvPackages
-    case "combo":
-      return comboPackages
+export const allTVPackages: TVPackage[] = [
+  ...iptvPackages,
+  ...cableTVPackages,
+]
+
+export function getInternetPackagesForTech(
+  tech: TechCategory
+): InternetPackage[] {
+  return allInternetPackages.filter((p) => p.technology === tech)
+}
+
+export function getTVPackagesForAddress(
+  technologies: TechCategory[]
+): TVPackage[] {
+  const available = [...iptvPackages]
+  if (technologies.includes("docsis")) {
+    available.push(...cableTVPackages)
   }
+  return available.sort((a, b) => a.order - b.order)
 }
 
-export function getPackagesForLocation(
-  type: PackageType,
-  isLesna5: boolean
-): Package[] {
-  const packages = getPackagesByType(type)
-  if (isLesna5) return packages
-  return packages.filter((pkg) => pkg.locationRestriction !== "lesna5")
+export function getInternetPackageById(
+  id: string
+): InternetPackage | undefined {
+  return allInternetPackages.find((p) => p.id === id)
 }
 
-export function getPackageById(id: string): Package | undefined {
-  return allPackages.find((pkg) => pkg.id === id)
+export function getTVPackageById(id: string): TVPackage | undefined {
+  return allTVPackages.find((p) => p.id === id)
+}
+
+// Technology display metadata
+export const technologyMeta: Record<
+  TechCategory,
+  { label: string; shortLabel: string; description: string }
+> = {
+  gpon: {
+    label: "Internet Światłowodowy",
+    shortLabel: "Światłowód",
+    description:
+      "Bezpośrednie połączenie światłowodowe GPON — najwyższe prędkości i stabilność",
+  },
+  bsa: {
+    label: "Internet Światłowodowy BSA",
+    shortLabel: "Światłowód BSA",
+    description:
+      "Internet światłowodowy realizowany przez sieć Orange z obsługą TV-EURO-SAT",
+  },
+  docsis: {
+    label: "Internet Kablowy",
+    shortLabel: "Kablowy",
+    description:
+      "Sprawdzony internet kablowy DOCSIS z możliwością telewizji kablowej",
+  },
+  radio: {
+    label: "Internet Radiowy",
+    shortLabel: "Radio",
+    description: "Technologia radiowa FWA — w trakcie wycofywania",
+  },
 }

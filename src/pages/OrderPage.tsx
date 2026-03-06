@@ -5,7 +5,16 @@ import OrderForm from "@/components/forms/OrderForm"
 
 export default function OrderPage() {
   const [searchParams] = useSearchParams()
-  const packageId = searchParams.get("pakiet") || undefined
+
+  const orderDefaults = {
+    internetPackageId: searchParams.get("internet") || "",
+    internetPeriod: searchParams.get("period") || "24m",
+    tvPackageId: searchParams.get("tv") || "",
+    tvPeriod: searchParams.get("tvPeriod") || "24m",
+    city: searchParams.get("city") || "",
+    street: searchParams.get("street") || "",
+    building: searchParams.get("building") || "",
+  }
 
   return (
     <>
@@ -13,7 +22,7 @@ export default function OrderPage() {
         title="Zamów Pakiet"
         subtitle="Wypełnij formularz, a skontaktujemy się z Tobą w celu potwierdzenia zamówienia."
         breadcrumbs={[
-          { label: "Pakiety", href: "/pakiety" },
+          { label: "Oferta", href: "/pakiety" },
           { label: "Zamówienie" },
         ]}
       />
@@ -26,7 +35,7 @@ export default function OrderPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="rounded-2xl bg-card border border-border p-6 sm:p-8">
-              <OrderForm defaultPackageId={packageId} />
+              <OrderForm defaults={orderDefaults} />
             </div>
           </motion.div>
 

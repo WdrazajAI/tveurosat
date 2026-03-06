@@ -1,118 +1,30 @@
-import type { CoverageArea, CoverageResult } from "@/types"
+import type {
+  CoverageDatabase,
+  CoverageCity,
+  CoverageCheckResult,
+  TechCategory,
+} from "@/types"
 
-// Placeholder coverage data — will be replaced with real Excel data from client
-export const coverageAreas: CoverageArea[] = [
-  {
-    id: "malkinia-lesna-5",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Leśna",
-    streetNormalized: "lesna",
-    specificBuildings: ["5"],
-    technology: "dvbt_iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600", "1000"],
-  },
-  {
-    id: "malkinia-lesna",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Leśna",
-    streetNormalized: "lesna",
-    buildingRange: { from: 1, to: 30 },
-    technology: "iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600", "1000"],
-  },
-  {
-    id: "malkinia-glowna",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Główna",
-    streetNormalized: "glowna",
-    buildingRange: { from: 1, to: 50 },
-    technology: "iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600", "1000"],
-  },
-  {
-    id: "malkinia-bieganska",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Biegańskiego",
-    streetNormalized: "bieganskiego",
-    buildingRange: { from: 1, to: 40 },
-    technology: "iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600"],
-  },
-  {
-    id: "malkinia-nurska",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Nurska",
-    streetNormalized: "nurska",
-    buildingRange: { from: 1, to: 60 },
-    technology: "iptv",
-    zone: "B",
-    availableSpeedTiers: ["100", "300", "600"],
-  },
-  {
-    id: "malkinia-ostrowska",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Ostrowska",
-    streetNormalized: "ostrowska",
-    buildingRange: { from: 1, to: 45 },
-    technology: "iptv",
-    zone: "B",
-    availableSpeedTiers: ["100", "300"],
-  },
-  {
-    id: "malkinia-koscielna",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "Kościelna",
-    streetNormalized: "koscielna",
-    buildingRange: { from: 1, to: 25 },
-    technology: "iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600", "1000"],
-  },
-  {
-    id: "malkinia-3maja",
-    city: "Małkinia Górna",
-    cityNormalized: "malkinia gorna",
-    street: "3 Maja",
-    streetNormalized: "3 maja",
-    buildingRange: { from: 1, to: 35 },
-    technology: "iptv",
-    zone: "A",
-    availableSpeedTiers: ["100", "300", "600"],
-  },
-  {
-    id: "prostynia-centrum",
-    city: "Prostyń",
-    cityNormalized: "prostyn",
-    street: "Centralna",
-    streetNormalized: "centralna",
-    buildingRange: { from: 1, to: 20 },
-    technology: "iptv",
-    zone: "C",
-    availableSpeedTiers: ["100", "300"],
-  },
-  {
-    id: "kietlanka-wiejska",
-    city: "Kiełczew",
-    cityNormalized: "kielczew",
-    street: "Wiejska",
-    streetNormalized: "wiejska",
-    buildingRange: { from: 1, to: 15 },
-    technology: "iptv",
-    zone: "C",
-    availableSpeedTiers: ["100", "300"],
-  },
-]
+let db: CoverageDatabase | null = null
+let loadingPromise: Promise<CoverageDatabase> | null = null
+
+export async function loadCoverageData(): Promise<CoverageDatabase> {
+  if (db) return db
+  if (loadingPromise) return loadingPromise
+
+  loadingPromise = fetch("/data/coverage.json")
+    .then((res) => {
+      if (!res.ok)
+        throw new Error(`Failed to load coverage data: ${res.status}`)
+      return res.json() as Promise<CoverageDatabase>
+    })
+    .then((data) => {
+      db = data
+      return data
+    })
+
+  return loadingPromise
+}
 
 function normalize(text: string): string {
   return text
@@ -129,89 +41,133 @@ function normalize(text: string): string {
     .replace(/ż/g, "z")
 }
 
-function matchesBuilding(area: CoverageArea, building: string): boolean {
-  const num = parseInt(building, 10)
-  if (isNaN(num)) return false
+export async function getCitySuggestions(
+  partial: string
+): Promise<CoverageCity[]> {
+  const data = await loadCoverageData()
+  const norm = normalize(partial)
+  if (norm.length < 2) return []
 
-  if (area.specificBuildings?.includes(building)) return true
-  if (area.buildingRange) {
-    return num >= area.buildingRange.from && num <= area.buildingRange.to
-  }
-  return true
+  return data.cities
+    .filter((c) => c.normalized.includes(norm))
+    .slice(0, 10)
 }
 
-export function checkCoverage(
-  city: string,
-  street: string,
-  building: string
-): CoverageResult {
-  const normalizedCity = normalize(city)
-  const normalizedStreet = normalize(street)
+export async function cityHasStreets(cityName: string): Promise<boolean> {
+  const data = await loadCoverageData()
+  const norm = normalize(cityName)
+  const city = data.cities.find((c) => c.normalized === norm)
+  return city?.hasStreets ?? false
+}
 
-  // Special case: Leśna 5 — check first for DVB-T + IPTV
-  const lesna5Match = coverageAreas.find(
-    (a) =>
-      a.id === "malkinia-lesna-5" &&
-      normalizedCity.includes(a.cityNormalized) &&
-      normalizedStreet.includes(a.streetNormalized) &&
-      a.specificBuildings?.includes(building.trim())
-  )
-  if (lesna5Match) {
-    return {
-      covered: true,
-      area: lesna5Match,
-      technology: "dvbt_iptv",
-      message:
-        "Twój adres jest w naszym zasięgu! Dostępna telewizja DVB-T oraz IPTV.",
+export async function getStreetSuggestions(
+  cityName: string,
+  partial: string
+): Promise<string[]> {
+  const data = await loadCoverageData()
+  const cityNorm = normalize(cityName)
+  const addresses = data.addresses[cityNorm] || []
+  const partialNorm = normalize(partial)
+
+  const streets = new Set<string>()
+  for (const addr of addresses) {
+    if (addr.s && addr.sn.includes(partialNorm)) {
+      streets.add(addr.s)
+    }
+  }
+  return Array.from(streets).sort((a, b) => a.localeCompare(b, "pl")).slice(0, 15)
+}
+
+export async function getBuildingSuggestions(
+  cityName: string,
+  streetName: string
+): Promise<string[]> {
+  const data = await loadCoverageData()
+  const cityNorm = normalize(cityName)
+  const streetNorm = normalize(streetName)
+  const addresses = data.addresses[cityNorm] || []
+
+  const buildings = new Set<string>()
+  for (const addr of addresses) {
+    const streetMatch = streetName
+      ? addr.sn === streetNorm
+      : addr.s === ""
+    if (streetMatch) {
+      buildings.add(addr.b)
     }
   }
 
-  // General search
-  const match = coverageAreas.find(
-    (a) =>
-      a.id !== "malkinia-lesna-5" &&
-      normalizedCity.includes(a.cityNormalized) &&
-      normalizedStreet.includes(a.streetNormalized) &&
-      matchesBuilding(a, building.trim())
-  )
+  return Array.from(buildings).sort((a, b) => {
+    const numA = parseInt(a, 10)
+    const numB = parseInt(b, 10)
+    if (!isNaN(numA) && !isNaN(numB)) return numA - numB
+    return a.localeCompare(b)
+  })
+}
 
-  if (match) {
+export async function checkCoverage(
+  city: string,
+  street: string,
+  building: string
+): Promise<CoverageCheckResult> {
+  const data = await loadCoverageData()
+  const cityNorm = normalize(city)
+  const streetNorm = normalize(street)
+  const buildingTrimmed = building.trim()
+
+  const addresses = data.addresses[cityNorm] || []
+
+  const match = addresses.find((addr) => {
+    const streetMatch = street
+      ? addr.sn === streetNorm
+      : addr.s === ""
+    return streetMatch && addr.b === buildingTrimmed
+  })
+
+  if (!match) {
     return {
-      covered: true,
-      area: match,
-      technology: match.technology,
-      message: "Twój adres jest w naszym zasięgu! Sprawdź dostępne pakiety.",
+      status: "not_covered",
+      address: { city, street, building },
+      technologies: [],
+      maxSpeeds: {},
+      message:
+        "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
+    }
+  }
+
+  const nonRadioTechs = match.techs.filter((t) => t.t !== "radio")
+  const hasRadioOnly =
+    nonRadioTechs.length === 0 &&
+    match.techs.some((t) => t.t === "radio")
+
+  if (hasRadioOnly) {
+    return {
+      status: "radio_only",
+      address: { city, street, building },
+      technologies: [],
+      maxSpeeds: {},
+      message:
+        "Pod Twoim adresem dostępna jest jedynie technologia radiowa, która jest wycofywana. Skontaktuj się z nami, aby omówić dostępne opcje.",
+    }
+  }
+
+  const techCategories = [
+    ...new Set(nonRadioTechs.map((t) => t.t)),
+  ] as TechCategory[]
+
+  const maxSpeeds: Partial<Record<TechCategory, { down: number; up: number }>> = {}
+  for (const tech of nonRadioTechs) {
+    const existing = maxSpeeds[tech.t]
+    if (!existing || tech.d > existing.down) {
+      maxSpeeds[tech.t] = { down: tech.d, up: tech.d }
     }
   }
 
   return {
-    covered: false,
-    message:
-      "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
+    status: "covered",
+    address: { city, street, building },
+    technologies: techCategories,
+    maxSpeeds,
+    message: "Twój adres jest w naszym zasięgu! Sprawdź dostępne pakiety.",
   }
-}
-
-export function getStreetSuggestions(
-  city: string,
-  partial: string
-): string[] {
-  const normalizedCity = normalize(city)
-  const normalizedPartial = normalize(partial)
-
-  const streets = new Set<string>()
-  coverageAreas
-    .filter((a) => normalizedCity.includes(a.cityNormalized))
-    .filter((a) => a.streetNormalized.includes(normalizedPartial))
-    .forEach((a) => streets.add(a.street))
-
-  return Array.from(streets)
-}
-
-export function getCitySuggestions(partial: string): string[] {
-  const normalizedPartial = normalize(partial)
-  const cities = new Set<string>()
-  coverageAreas
-    .filter((a) => a.cityNormalized.includes(normalizedPartial))
-    .forEach((a) => cities.add(a.city))
-  return Array.from(cities)
 }

@@ -5,16 +5,17 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-section-dark-bg text-section-dark-text pt-16 pb-8">
+    <footer className="bg-section-dark-bg text-section-dark-text pt-20 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Column 1 - Logo & Description */}
           <div>
             <Link to="/" className="flex items-center mb-4">
-              <span className="text-xl font-extrabold tracking-tight">
-                <span className="text-primary">TV-EURO</span>
-                <span className="text-secondary">-SAT</span>
-              </span>
+              <img
+                src="/logo.svg"
+                alt="TV-EURO-SAT"
+                className="h-7 w-auto brightness-0 invert"
+              />
             </Link>
             <p className="text-sm text-white/60 leading-relaxed mb-4">
               Dostawca internetu światłowodowego i telewizji kablowej w regionie
@@ -46,18 +47,10 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  to="/pakiety/internet"
+                  to="/pakiety"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
-                  Internet
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/pakiety/telewizja"
-                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  Telewizja
+                  Sprawdź ofertę
                 </Link>
               </li>
               <li>
@@ -65,7 +58,7 @@ export default function Footer() {
                   to="/pakiety"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
-                  Pakiety
+                  Sprawdź dostępność
                 </Link>
               </li>
               <li>
@@ -136,20 +129,29 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="tel:+48123456789"
+                  href="tel:+48224730243"
                   className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   <Phone className="h-4 w-4" />
-                  +48 123 456 789
+                  +48 22 473 02 43
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:kontakt@tveurosat.pl"
+                  href="tel:+48604132157"
+                  className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  <Phone className="h-4 w-4" />
+                  +48 604 132 157
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:biuro@tveurosat.net"
                   className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   <Mail className="h-4 w-4" />
-                  kontakt@tveurosat.pl
+                  biuro@tveurosat.net
                 </a>
               </li>
               <li>
