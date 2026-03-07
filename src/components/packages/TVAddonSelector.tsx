@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { ArrowLeft, ArrowRight, Tv } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PackageCard from "./PackageCard"
-import { getTVPackagesForAddress } from "@/data/packages"
+import { useTVPackagesList } from "@/hooks/use-packages"
 import type { TechCategory, TVPackage, ContractPeriod } from "@/types"
 
 interface TVAddonSelectorProps {
@@ -30,7 +30,33 @@ export default function TVAddonSelector({
   onBack,
 }: TVAddonSelectorProps) {
   const [period, setPeriod] = useState<ContractPeriod>("24m")
-  const packages = getTVPackagesForAddress(technologies)
+  const { packages: allTVPackages, loading } = useTVPackagesList()
+
+  // Filter: IPTV always available, cable TV only if docsis is available
+  const packages = allTVPackages.filter(pkg => {
+    if (pkg.type === 'iptv') return true
+    if (pkg.type === 'cable') return technologies.includes('docsis')
+    return false
+  }).sort((a, b) => a.order - b.order)
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 w-48 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-32 bg-muted rounded mt-2 animate-pulse" />
+          </div>
+        </div>
+        <div className="h-12 bg-muted rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

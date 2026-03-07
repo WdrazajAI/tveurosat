@@ -30,6 +30,7 @@ const DocumentEditPage = lazy(() => import("@/pages/admin/DocumentEditPage"))
 const PackagesListPage = lazy(() => import("@/pages/admin/PackagesListPage"))
 const InternetPackageEditPage = lazy(() => import("@/pages/admin/InternetPackageEditPage"))
 const TVPackageEditPage = lazy(() => import("@/pages/admin/TVPackageEditPage"))
+const CoverageImportPage = lazy(() => import("@/pages/admin/CoverageImportPage"))
 
 function PageLoader() {
   return (
@@ -77,6 +78,7 @@ function App() {
           <Route path="pakiety" element={<PackagesListPage />} />
           <Route path="pakiety/internet/:id" element={<InternetPackageEditPage />} />
           <Route path="pakiety/tv/:id" element={<TVPackageEditPage />} />
+          <Route path="zasieg" element={<CoverageImportPage />} />
         </Route>
       </Routes>
       </Suspense>

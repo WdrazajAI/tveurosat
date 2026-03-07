@@ -3,7 +3,8 @@ import { motion } from "framer-motion"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PackageCard from "./PackageCard"
-import { getInternetPackagesForTech, technologyMeta } from "@/data/packages"
+import { useInternetPackagesList } from "@/hooks/use-packages"
+import { technologyMeta } from "@/data/packages"
 import type { TechCategory, InternetPackage, ContractPeriod } from "@/types"
 
 interface InternetPackageSelectorProps {
@@ -29,6 +30,29 @@ export default function InternetPackageSelector({
   onBack,
 }: InternetPackageSelectorProps) {
   const [period, setPeriod] = useState<ContractPeriod>("24m")
+  const { packages: allPackages, loading } = useInternetPackagesList()
+
+  const getPackagesForTech = (tech: TechCategory) =>
+    allPackages.filter(p => p.technology === tech).sort((a, b) => a.order - b.order)
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 w-48 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-32 bg-muted rounded mt-2 animate-pulse" />
+          </div>
+        </div>
+        <div className="h-12 bg-muted rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -75,7 +99,7 @@ export default function InternetPackageSelector({
 
       {/* Packages by technology */}
       {technologies.map((tech) => {
-        const packages = getInternetPackagesForTech(tech)
+        const packages = getPackagesForTech(tech)
         const meta = technologyMeta[tech]
         if (packages.length === 0) return null
 

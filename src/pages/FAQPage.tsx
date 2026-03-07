@@ -4,7 +4,8 @@ import { ChevronDown, MessageCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import PageHero from "@/components/layout/PageHero"
-import { getFAQByCategory, faqCategories } from "@/data/faq"
+import { useFAQList } from "@/hooks/use-faq"
+import { faqCategories } from "@/data/faq"
 import { cn } from "@/lib/utils"
 
 function FAQItem({ question, answer, index }: { question: string; answer: string; index: number }) {
@@ -50,7 +51,37 @@ function FAQItem({ question, answer, index }: { question: string; answer: string
 
 export default function FAQPage() {
   const [activeCategory, setActiveCategory] = useState("all")
-  const items = activeCategory === "all" ? getFAQByCategory() : getFAQByCategory(activeCategory)
+  const { items: allItems, loading } = useFAQList()
+
+  const items = activeCategory === "all"
+    ? allItems
+    : allItems.filter(item => item.category === activeCategory)
+
+  if (loading) {
+    return (
+      <>
+        <PageHero
+          title="Często Zadawane Pytania"
+          subtitle="Znajdź odpowiedzi na najczęstsze pytania dotyczące naszych usług."
+          breadcrumbs={[{ label: "FAQ" }]}
+        />
+        <section className="pt-6 pb-12 sm:pt-8 sm:pb-16">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-wrap gap-2 mb-10">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-10 w-24 bg-muted rounded-full animate-pulse" />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
 
   return (
     <>

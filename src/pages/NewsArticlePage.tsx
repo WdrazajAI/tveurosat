@@ -3,12 +3,37 @@ import { motion } from "framer-motion"
 import { Calendar, ArrowLeft, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PageHero from "@/components/layout/PageHero"
-import { getNewsBySlug, getLatestNews, newsCategories } from "@/data/news"
+import { useNewsList } from "@/hooks/use-news"
+import { newsCategories } from "@/data/news"
 import NewsCard from "@/components/news/NewsCard"
 
 export default function NewsArticlePage() {
   const { slug } = useParams<{ slug: string }>()
-  const article = slug ? getNewsBySlug(slug) : undefined
+  const { articles, loading } = useNewsList()
+
+  if (loading) {
+    return (
+      <>
+        <PageHero
+          title="Wczytywanie..."
+          breadcrumbs={[
+            { label: "Aktualności", href: "/aktualnosci" },
+            { label: "..." },
+          ]}
+        />
+        <div className="max-w-3xl mx-auto px-4 py-12">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-muted rounded w-1/4" />
+            <div className="h-8 bg-muted rounded w-3/4" />
+            <div className="h-32 bg-muted rounded" />
+            <div className="h-32 bg-muted rounded" />
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  const article = articles.find(a => a.slug === slug)
 
   if (!article) {
     return (
@@ -32,7 +57,7 @@ export default function NewsArticlePage() {
     )
   }
 
-  const otherArticles = getLatestNews(4).filter((a) => a.id !== article.id).slice(0, 3)
+  const otherArticles = articles.filter((a) => a.id !== article.id).slice(0, 3)
 
   return (
     <>

@@ -1,12 +1,43 @@
 import { useState } from "react"
 import PageHero from "@/components/layout/PageHero"
 import NewsCard from "@/components/news/NewsCard"
-import { getNewsByCategory, newsCategories } from "@/data/news"
+import { useNewsList } from "@/hooks/use-news"
+import { newsCategories } from "@/data/news"
 import { cn } from "@/lib/utils"
 
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState("all")
-  const articles = getNewsByCategory(activeCategory)
+  const { articles: allArticles, loading } = useNewsList()
+
+  const articles = activeCategory === "all"
+    ? allArticles
+    : allArticles.filter(a => a.category === activeCategory)
+
+  if (loading) {
+    return (
+      <>
+        <PageHero
+          title="Aktualności"
+          subtitle="Bądź na bieżąco z nowościami, promocjami i informacjami o rozwoju naszej sieci."
+          breadcrumbs={[{ label: "Aktualności" }]}
+        />
+        <section className="pt-6 pb-12 sm:pt-8 sm:pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap gap-2 mb-10">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-10 w-24 bg-muted rounded-full animate-pulse" />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
 
   return (
     <>

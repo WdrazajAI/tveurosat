@@ -40,7 +40,7 @@ interface TVRow {
 
 function mapInternetRow(row: InternetRow): InternetPackage {
   return {
-    id: row.id,
+    id: row.slug,  // Use slug as ID for frontend compatibility
     name: row.name,
     technology: row.technology as InternetPackage["technology"],
     tagline: row.tagline,
@@ -56,7 +56,7 @@ function mapInternetRow(row: InternetRow): InternetPackage {
 
 function mapTVRow(row: TVRow): TVPackage {
   return {
-    id: row.id,
+    id: row.slug,  // Use slug as ID for frontend compatibility
     name: row.name,
     type: row.type as TVPackage["type"],
     tagline: row.tagline,

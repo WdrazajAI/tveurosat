@@ -1,11 +1,31 @@
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { getLatestNews } from "@/data/news"
+import { useNewsList } from "@/hooks/use-news"
 import NewsCard from "@/components/news/NewsCard"
 
 export default function NewsPreviewSection() {
-  const latestNews = getLatestNews(3)
+  const { articles, loading } = useNewsList()
+  const latestNews = articles.slice(0, 3)
+
+  if (loading) {
+    return (
+      <section className="py-16 sm:py-20 bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="h-6 w-24 bg-muted rounded-full mx-auto animate-pulse" />
+            <div className="h-10 w-64 bg-muted rounded mt-6 mx-auto animate-pulse" />
+            <div className="h-6 w-96 bg-muted rounded mt-4 mx-auto animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-64 bg-muted rounded-xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-16 sm:py-20 bg-transparent">

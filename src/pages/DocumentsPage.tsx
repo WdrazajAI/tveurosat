@@ -2,10 +2,38 @@ import { motion } from "framer-motion"
 import { FileText, Download, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import PageHero from "@/components/layout/PageHero"
-import { documents, documentCategories } from "@/data/documents"
+import { useDocumentsList } from "@/hooks/use-documents"
+import { documentCategories } from "@/data/documents"
 
 export default function DocumentsPage() {
+  const { documents, loading } = useDocumentsList()
   const categories = Object.entries(documentCategories)
+
+  if (loading) {
+    return (
+      <>
+        <PageHero
+          title="Dokumenty"
+          subtitle="Cenniki, regulaminy, formularze i dokumenty techniczne do pobrania."
+          breadcrumbs={[{ label: "Dokumenty" }]}
+        />
+        <section className="pt-6 pb-12 sm:pt-8 sm:pb-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="mb-12">
+                <div className="h-6 w-32 bg-muted rounded mb-4 animate-pulse" />
+                <div className="space-y-3">
+                  {[1, 2].map(j => (
+                    <div key={j} className="h-24 bg-muted rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </>
+    )
+  }
 
   return (
     <>

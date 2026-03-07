@@ -5,6 +5,7 @@ import {
   HelpCircle,
   FileText,
   Package,
+  MapPin,
   X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -15,6 +16,7 @@ const navItems = [
   { to: "/admin/faq", label: "FAQ", icon: HelpCircle },
   { to: "/admin/dokumenty", label: "Dokumenty", icon: FileText },
   { to: "/admin/pakiety", label: "Pakiety", icon: Package },
+  { to: "/admin/zasieg", label: "Zasięg", icon: MapPin },
 ]
 
 interface AdminSidebarProps {
