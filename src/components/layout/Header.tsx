@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Link, NavLink, useLocation } from "react-router-dom"
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ThemeToggle from "@/components/shared/ThemeToggle"
@@ -18,6 +18,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -49,13 +50,22 @@ export default function Header() {
               )}
             >
               {/* Logo */}
-              <Link to="/" className="flex items-center">
+              <button
+                onClick={() => {
+                  if (location.pathname === "/") {
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  } else {
+                    navigate("/")
+                  }
+                }}
+                className="flex items-center"
+              >
                 <img
                   src="/logo.svg"
                   alt="TV-EURO-SAT"
-                  className="h-7 sm:h-8 w-auto dark:brightness-0 dark:invert"
+                  className="h-6 sm:h-7 w-auto dark:brightness-0 dark:invert"
                 />
-              </Link>
+              </button>
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">

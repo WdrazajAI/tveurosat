@@ -154,15 +154,14 @@ export default function CoverageForm({ onResult, compact }: CoverageFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const canSubmit = city && building && (hasStreets ? street : true)
     if (!canSubmit) return
 
     setLoading(true)
     try {
       const result = await checkCoverage(
         city,
-        hasStreets ? street : "",
-        building
+        citySelected && hasStreets ? street : "",
+        citySelected ? building : ""
       )
       onResult(result)
     } finally {
@@ -170,7 +169,7 @@ export default function CoverageForm({ onResult, compact }: CoverageFormProps) {
     }
   }
 
-  const canSubmit = citySelected && building && (hasStreets ? street : true)
+  const canSubmit = city.trim().length >= 2 && (citySelected ? (building && (hasStreets ? street : true)) : true)
 
   return (
     <form

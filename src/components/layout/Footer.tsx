@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   return (
     <footer className="bg-section-dark-bg text-section-dark-text pt-20 pb-8">
@@ -10,16 +12,25 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Column 1 - Logo & Description */}
           <div>
-            <Link to="/" className="flex items-center mb-4">
+            <button
+              onClick={() => {
+                if (location.pathname === "/") {
+                  window.scrollTo({ top: 0, behavior: "smooth" })
+                } else {
+                  navigate("/")
+                }
+              }}
+              className="flex items-center mb-4"
+            >
               <img
                 src="/logo.svg"
                 alt="TV-EURO-SAT"
                 className="h-7 w-auto brightness-0 invert"
               />
-            </Link>
+            </button>
             <p className="text-sm text-white/60 leading-relaxed mb-4">
-              Dostawca internetu światłowodowego i telewizji kablowej w regionie
-              Małkini.
+              Dostawca internetu światłowodowego i telewizji kablowej na wschodnim
+              Mazowszu.
             </p>
             <div className="flex gap-3">
               <a
@@ -69,6 +80,14 @@ export default function Footer() {
                   Cennik
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/dokumenty"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
+                >
+                  Dokumenty
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -108,14 +127,6 @@ export default function Footer() {
                   className="text-sm text-white/60 hover:text-white transition-colors duration-200"
                 >
                   Strefa Klienta
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/dokumenty"
-                  className="text-sm text-white/60 hover:text-white transition-colors duration-200"
-                >
-                  Dokumenty
                 </Link>
               </li>
             </ul>
@@ -167,7 +178,17 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-white/40">
           <p>&copy; {currentYear} TV-EURO-SAT. Wszelkie prawa zastrzeżone.</p>
-          <p>Stworzone z pasją w Małkini</p>
+          <p>
+            Website project by{" "}
+            <a
+              href="https://wdrazaj.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors duration-200"
+            >
+              Wdrażaj.AI
+            </a>
+          </p>
         </div>
       </div>
     </footer>

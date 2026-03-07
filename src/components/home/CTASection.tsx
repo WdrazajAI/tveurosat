@@ -9,7 +9,7 @@ export default function CTASection() {
   const [result, setResult] = useState<CoverageCheckResult | null>(null)
 
   return (
-    <section id="cta-section" className="py-16 sm:py-20 bg-card/20 relative overflow-hidden">
+    <section id="cta-section" className="pt-8 sm:pt-10 pb-16 sm:pb-20 bg-card/20 dark:bg-transparent relative overflow-hidden">
       {/* Decorative Geometric Shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-16 left-[5%] w-72 h-72 border-2 border-primary/10 rotate-45 rounded-3xl hidden md:block" />

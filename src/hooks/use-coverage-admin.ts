@@ -44,12 +44,17 @@ export interface CSVCoverageRow {
   operator: string
 }
 
+// Updated row with tracked changed fields
+export interface UpdatedRow {
+  row: CSVCoverageRow
+  changedFields: string[]
+}
+
 // Diff result for preview
 export interface CoverageDiff {
   newRows: CSVCoverageRow[]
-  updatedRows: CSVCoverageRow[]
+  updatedRows: UpdatedRow[]
   unchangedCount: number
-  deletedIds: string[] // address_ids that are in DB but not in CSV
 }
 
 // Parse CSV content (format from UKE/operator data)
@@ -145,11 +150,8 @@ export async function calculateDiff(
     existingMap.set(row.address_id, row)
   }
 
-  // Create set of CSV address_ids
-  const csvAddressIds = new Set(csvRows.map((r) => r.address_id))
-
   const newRows: CSVCoverageRow[] = []
-  const updatedRows: CSVCoverageRow[] = []
+  const updatedRows: UpdatedRow[] = []
   let unchangedCount = 0
 
   // Helper to normalize values for comparison (null, undefined, "" are all equal)
@@ -158,36 +160,26 @@ export async function calculateDiff(
     return val
   }
 
+  const comparedFields = ["locality", "street", "building_number", "technology", "speed_down", "speed_up", "medium"] as const
+
   for (const csvRow of csvRows) {
     const existing = existingMap.get(csvRow.address_id)
 
     if (!existing) {
-      // New address
       newRows.push(csvRow)
     } else {
-      // Check if anything changed (normalize null/"" differences)
-      const hasChanges =
-        normalize(existing.locality) !== normalize(csvRow.locality) ||
-        normalize(existing.street) !== normalize(csvRow.street) ||
-        normalize(existing.building_number) !== normalize(csvRow.building_number) ||
-        normalize(existing.technology) !== normalize(csvRow.technology) ||
-        normalize(existing.speed_down) !== normalize(csvRow.speed_down) ||
-        normalize(existing.speed_up) !== normalize(csvRow.speed_up) ||
-        normalize(existing.medium) !== normalize(csvRow.medium)
+      const changedFields: string[] = []
+      for (const field of comparedFields) {
+        if (normalize(existing[field]) !== normalize(csvRow[field])) {
+          changedFields.push(field)
+        }
+      }
 
-      if (hasChanges) {
-        updatedRows.push(csvRow)
+      if (changedFields.length > 0) {
+        updatedRows.push({ row: csvRow, changedFields })
       } else {
         unchangedCount++
       }
-    }
-  }
-
-  // Find deleted (in DB but not in CSV)
-  const deletedIds: string[] = []
-  for (const addressId of existingMap.keys()) {
-    if (!csvAddressIds.has(addressId)) {
-      deletedIds.push(addressId)
     }
   }
 
@@ -195,22 +187,18 @@ export async function calculateDiff(
     newRows,
     updatedRows,
     unchangedCount,
-    deletedIds,
   }
 }
 
 // Apply changes to database using UPSERT (insert or update on conflict)
 export async function applyChanges(
-  diff: CoverageDiff,
-  options: { deleteRemoved: boolean } = { deleteRemoved: false }
-): Promise<{ success: boolean; insertedCount: number; updatedCount: number; deletedCount: number; error?: string }> {
+  diff: CoverageDiff
+): Promise<{ success: boolean; insertedCount: number; updatedCount: number; error?: string }> {
   let insertedCount = 0
   let updatedCount = 0
-  let deletedCount = 0
 
   try {
-    // Combine new and updated rows - use UPSERT for all
-    const allRows = [...diff.newRows, ...diff.updatedRows]
+    const allRows = [...diff.newRows, ...diff.updatedRows.map((u) => u.row)]
 
     if (allRows.length > 0) {
       const batchSize = 100
@@ -235,7 +223,6 @@ export async function applyChanges(
           operator: row.operator,
         }))
 
-        // Use upsert with onConflict - if address_id exists, update; otherwise insert
         const { error } = await supabase
           .from("coverage")
           .upsert(batch, {
@@ -246,33 +233,16 @@ export async function applyChanges(
         if (error) throw new Error(`Upsert failed: ${error.message}`)
       }
 
-      // Count based on diff classification (approximate - upsert doesn't tell us which were inserts vs updates)
       insertedCount = diff.newRows.length
       updatedCount = diff.updatedRows.length
     }
 
-    // Delete removed rows (only if explicitly requested)
-    if (options.deleteRemoved && diff.deletedIds.length > 0) {
-      const batchSize = 100
-      for (let i = 0; i < diff.deletedIds.length; i += batchSize) {
-        const batch = diff.deletedIds.slice(i, i + batchSize)
-        const { error } = await supabase
-          .from("coverage")
-          .delete()
-          .in("address_id", batch)
-
-        if (error) throw new Error(`Delete failed: ${error.message}`)
-        deletedCount += batch.length
-      }
-    }
-
-    return { success: true, insertedCount, updatedCount, deletedCount }
+    return { success: true, insertedCount, updatedCount }
   } catch (err) {
     return {
       success: false,
       insertedCount,
       updatedCount,
-      deletedCount,
       error: err instanceof Error ? err.message : "Unknown error",
     }
   }
@@ -307,18 +277,18 @@ export function useCoverageImport() {
   }, [])
 
   const apply = useCallback(
-    async (diff: CoverageDiff, options?: { deleteRemoved: boolean }) => {
+    async (diff: CoverageDiff) => {
       setLoading(true)
       setError(null)
       try {
-        const result = await applyChanges(diff, options)
+        const result = await applyChanges(diff)
         if (!result.success) {
           setError(result.error || "Unknown error")
         }
         return result
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to apply changes")
-        return { success: false, insertedCount: 0, updatedCount: 0, deletedCount: 0 }
+        return { success: false, insertedCount: 0, updatedCount: 0 }
       } finally {
         setLoading(false)
       }

@@ -49,15 +49,15 @@ export default function ServiceSelector({
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
       >
         {/* Internet only */}
         <motion.button
           variants={itemVariants}
           onClick={() => onSelect("internet")}
-          className="group p-6 rounded-2xl border border-border bg-card text-left hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
+          className="group p-6 rounded-2xl border border-border bg-card text-center hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
         >
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/15 transition-colors">
             <Wifi className="h-6 w-6 text-primary" />
           </div>
           <h4 className="text-base font-semibold mb-1">Internet</h4>
@@ -66,46 +66,42 @@ export default function ServiceSelector({
           </p>
         </motion.button>
 
+        {/* Both - center position */}
+        {hasTVOptions && (
+          <motion.button
+            variants={itemVariants}
+            onClick={() => onSelect("both")}
+            className="group p-6 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] text-center hover:shadow-xl hover:shadow-primary/5 hover:border-primary/40 transition-all duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/15 transition-colors">
+              <div className="flex -space-x-1">
+                <Wifi className="h-5 w-5 text-primary" />
+                <Tv className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+            <h4 className="text-base font-semibold mb-1">
+              Internet + Telewizja
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              Połącz internet z telewizją w jednym pakiecie
+            </p>
+          </motion.button>
+        )}
+
         {/* TV only */}
         {hasTVOptions && (
           <motion.button
             variants={itemVariants}
             onClick={() => onSelect("tv")}
-            className="group p-6 rounded-2xl border border-border bg-card text-left hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
+            className="group p-6 rounded-2xl border border-border bg-card text-center hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
           >
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/15 transition-colors">
               <Tv className="h-6 w-6 text-primary" />
             </div>
             <h4 className="text-base font-semibold mb-1">Telewizja</h4>
             <p className="text-sm text-muted-foreground">
               Telewizja cyfrowa IPTV lub kablowa
             </p>
-          </motion.button>
-        )}
-
-        {/* Both */}
-        {hasTVOptions && (
-          <motion.button
-            variants={itemVariants}
-            onClick={() => onSelect("both")}
-            className="group sm:col-span-2 p-6 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] text-left hover:shadow-xl hover:shadow-primary/5 hover:border-primary/40 transition-all duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/15 transition-colors">
-                <div className="flex -space-x-1">
-                  <Wifi className="h-5 w-5 text-primary" />
-                  <Tv className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-              <div>
-                <h4 className="text-base font-semibold mb-1">
-                  Internet + Telewizja
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  Połącz internet z telewizją w jednym pakiecie
-                </p>
-              </div>
-            </div>
           </motion.button>
         )}
       </motion.div>

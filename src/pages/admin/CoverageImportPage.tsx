@@ -1,28 +1,61 @@
 import { useState, useCallback } from "react"
-import { Upload, FileText, AlertTriangle, CheckCircle, Plus, RefreshCw, Trash2, Loader2 } from "lucide-react"
+import { Upload, FileText, AlertTriangle, CheckCircle, Plus, RefreshCw, Loader2, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   useCoverageImport,
   getCoverageStats,
   type CoverageDiff,
+  type CSVCoverageRow,
+  type UpdatedRow,
 } from "@/hooks/use-coverage-admin"
 
 type ImportStep = "upload" | "preview" | "applying" | "done"
 
+// All columns to display in preview tables
+const ALL_COLUMNS: { key: keyof CSVCoverageRow; label: string }[] = [
+  { key: "address_id", label: "ID adresu" },
+  { key: "simc_code", label: "SIMC" },
+  { key: "locality", label: "Miejscowość" },
+  { key: "teryt_code", label: "TERYT" },
+  { key: "street", label: "Ulica" },
+  { key: "street_code", label: "Kod ulicy" },
+  { key: "building_number", label: "Nr budynku" },
+  { key: "latitude", label: "Szer. geo." },
+  { key: "longitude", label: "Dł. geo." },
+  { key: "medium", label: "Medium" },
+  { key: "technology", label: "Technologia" },
+  { key: "speed_down", label: "Download" },
+  { key: "speed_up", label: "Upload" },
+  { key: "speed_type", label: "Typ prędkości" },
+  { key: "internet_available", label: "Internet" },
+  { key: "tv_available", label: "TV" },
+  { key: "operator", label: "Operator" },
+]
+
+function formatCellValue(value: string | number | boolean): string {
+  if (typeof value === "boolean") return value ? "TAK" : "NIE"
+  if (value === null || value === undefined || value === "") return "-"
+  return String(value)
+}
+
+const PAGE_SIZE = 10
+const LOAD_MORE_SIZE = 50
+
 export default function CoverageImportPage() {
   const [step, setStep] = useState<ImportStep>("upload")
   const [diff, setDiff] = useState<CoverageDiff | null>(null)
-  const [deleteRemoved, setDeleteRemoved] = useState(false)
   const [result, setResult] = useState<{
     insertedCount: number
     updatedCount: number
-    deletedCount: number
   } | null>(null)
   const [stats, setStats] = useState<{
     totalAddresses: number
     localities: number
     technologies: Record<string, number>
   } | null>(null)
+
+  const [newRowsVisible, setNewRowsVisible] = useState(PAGE_SIZE)
+  const [updatedRowsVisible, setUpdatedRowsVisible] = useState(PAGE_SIZE)
 
   const { parseCSV, getDiff, apply, loading, error } = useCoverageImport()
 
@@ -50,10 +83,11 @@ export default function CoverageImportPage() {
         return
       }
 
-      // Calculate diff
       const diffResult = await getDiff(rows)
       if (diffResult) {
         setDiff(diffResult)
+        setNewRowsVisible(PAGE_SIZE)
+        setUpdatedRowsVisible(PAGE_SIZE)
         setStep("preview")
       }
     },
@@ -64,26 +98,26 @@ export default function CoverageImportPage() {
     if (!diff) return
 
     setStep("applying")
-    const applyResult = await apply(diff, { deleteRemoved })
+    const applyResult = await apply(diff)
 
     if (applyResult.success) {
       setResult({
         insertedCount: applyResult.insertedCount,
         updatedCount: applyResult.updatedCount,
-        deletedCount: applyResult.deletedCount,
       })
       setStep("done")
-      loadStats() // Refresh stats
+      loadStats()
     } else {
-      setStep("preview") // Go back to preview on error
+      setStep("preview")
     }
-  }, [diff, deleteRemoved, apply, loadStats])
+  }, [diff, apply, loadStats])
 
   const handleReset = useCallback(() => {
     setStep("upload")
     setDiff(null)
     setResult(null)
-    setDeleteRemoved(false)
+    setNewRowsVisible(PAGE_SIZE)
+    setUpdatedRowsVisible(PAGE_SIZE)
   }, [])
 
   return (
@@ -172,8 +206,8 @@ export default function CoverageImportPage() {
       {/* Preview step */}
       {step === "preview" && diff && (
         <div className="space-y-6">
-          {/* Summary cards */}
-          <div className="grid grid-cols-4 gap-4">
+          {/* Summary cards - 3 columns */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
               <div className="flex items-center gap-2 mb-1">
                 <Plus className="h-4 w-4 text-green-500" />
@@ -195,110 +229,61 @@ export default function CoverageImportPage() {
               </div>
               <p className="text-2xl font-bold">{diff.unchangedCount}</p>
             </div>
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-              <div className="flex items-center gap-2 mb-1">
-                <Trash2 className="h-4 w-4 text-red-500" />
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">Do usunięcia</p>
-              </div>
-              <p className="text-2xl font-bold text-red-600">{diff.deletedIds.length}</p>
-            </div>
           </div>
 
-          {/* Preview tables */}
+          {/* New rows table */}
           {diff.newRows.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold mb-2 text-green-600">
-                Nowe adresy (przykład pierwszych 10)
+                Nowe adresy
               </h3>
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Miejscowość</th>
-                      <th className="px-3 py-2 text-left">Ulica</th>
-                      <th className="px-3 py-2 text-left">Nr</th>
-                      <th className="px-3 py-2 text-left">Technologia</th>
-                      <th className="px-3 py-2 text-left">Prędkość</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {diff.newRows.slice(0, 10).map((row) => (
-                      <tr key={row.address_id} className="border-t">
-                        <td className="px-3 py-2">{row.locality}</td>
-                        <td className="px-3 py-2">{row.street || "-"}</td>
-                        <td className="px-3 py-2">{row.building_number}</td>
-                        <td className="px-3 py-2">{row.technology}</td>
-                        <td className="px-3 py-2">{row.speed_down} Mb/s</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {diff.newRows.length > 10 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  ...i {diff.newRows.length - 10} więcej
+              <PreviewTable
+                rows={diff.newRows.slice(0, newRowsVisible)}
+                type="new"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Wyświetlono {Math.min(newRowsVisible, diff.newRows.length)} z {diff.newRows.length}
                 </p>
-              )}
+                {newRowsVisible < diff.newRows.length && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setNewRowsVisible((v) => v + LOAD_MORE_SIZE)}
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Pokaż więcej
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
+          {/* Updated rows table */}
           {diff.updatedRows.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold mb-2 text-blue-600">
-                Zaktualizowane adresy (przykład pierwszych 10)
+                Zaktualizowane adresy
               </h3>
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Miejscowość</th>
-                      <th className="px-3 py-2 text-left">Ulica</th>
-                      <th className="px-3 py-2 text-left">Nr</th>
-                      <th className="px-3 py-2 text-left">Technologia</th>
-                      <th className="px-3 py-2 text-left">Prędkość</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {diff.updatedRows.slice(0, 10).map((row) => (
-                      <tr key={row.address_id} className="border-t">
-                        <td className="px-3 py-2">{row.locality}</td>
-                        <td className="px-3 py-2">{row.street || "-"}</td>
-                        <td className="px-3 py-2">{row.building_number}</td>
-                        <td className="px-3 py-2">{row.technology}</td>
-                        <td className="px-3 py-2">{row.speed_down} Mb/s</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {diff.updatedRows.length > 10 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  ...i {diff.updatedRows.length - 10} więcej
+              <PreviewTable
+                updatedRows={diff.updatedRows.slice(0, updatedRowsVisible)}
+                type="updated"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Wyświetlono {Math.min(updatedRowsVisible, diff.updatedRows.length)} z {diff.updatedRows.length}
                 </p>
-              )}
-            </div>
-          )}
-
-          {/* Delete option */}
-          {diff.deletedIds.length > 0 && (
-            <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={deleteRemoved}
-                  onChange={(e) => setDeleteRemoved(e.target.checked)}
-                  className="mt-1"
-                />
-                <div>
-                  <p className="font-medium text-red-700 dark:text-red-400">
-                    Usuń {diff.deletedIds.length} adresów których nie ma w CSV
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Adresy obecne w bazie, ale nieobecne w importowanym pliku zostaną usunięte.
-                    Zaznacz tylko jeśli plik CSV zawiera pełną, aktualną listę adresów.
-                  </p>
-                </div>
-              </label>
+                {updatedRowsVisible < diff.updatedRows.length && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUpdatedRowsVisible((v) => v + LOAD_MORE_SIZE)}
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1" />
+                    Pokaż więcej
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
@@ -366,12 +351,6 @@ export default function CoverageImportPage() {
                 <p className="text-sm text-muted-foreground">zaktualizowanych</p>
               </div>
             )}
-            {result.deletedCount > 0 && (
-              <div className="text-center">
-                <p className="text-2xl font-bold text-red-600">{result.deletedCount}</p>
-                <p className="text-sm text-muted-foreground">usuniętych</p>
-              </div>
-            )}
           </div>
           <Button onClick={handleReset}>
             <Upload className="h-4 w-4 mr-2" />
@@ -379,6 +358,63 @@ export default function CoverageImportPage() {
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+// Reusable preview table component with all columns and horizontal scroll
+function PreviewTable({
+  rows,
+  updatedRows,
+  type,
+}: {
+  rows?: CSVCoverageRow[]
+  updatedRows?: UpdatedRow[]
+  type: "new" | "updated"
+}) {
+  const displayRows = type === "new"
+    ? (rows || []).map((row) => ({ row, changedFields: [] as string[] }))
+    : (updatedRows || [])
+
+  return (
+    <div className="overflow-x-auto rounded-lg border">
+      <table className="min-w-max text-sm">
+        <thead className="bg-muted">
+          <tr>
+            {ALL_COLUMNS.map((col) => (
+              <th key={col.key} className="px-3 py-2 text-left whitespace-nowrap font-medium">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {displayRows.map(({ row, changedFields }) => (
+            <tr
+              key={row.address_id}
+              className={
+                type === "new"
+                  ? "border-t bg-green-50 dark:bg-green-950/20"
+                  : "border-t"
+              }
+            >
+              {ALL_COLUMNS.map((col) => {
+                const isChanged = type === "updated" && changedFields.includes(col.key)
+                return (
+                  <td
+                    key={col.key}
+                    className={`px-3 py-2 whitespace-nowrap ${
+                      isChanged ? "bg-blue-100 dark:bg-blue-950/40 font-medium text-blue-700 dark:text-blue-300" : ""
+                    }`}
+                  >
+                    {formatCellValue(row[col.key])}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
