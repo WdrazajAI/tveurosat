@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ShoppingCart, CheckCircle, Loader2, Wifi, Tv, Check } from "lucide-react"
+import ReCAPTCHA from "react-google-recaptcha"
+import { ShoppingCart, Loader2, Wifi, Tv, Check, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,10 +10,11 @@ import { orderFormSchema, type OrderFormData } from "@/lib/form-schemas"
 import {
   getInternetPackageById,
   getTVPackageById,
-  allInternetPackages,
   technologyMeta,
 } from "@/data/packages"
+import { supabase } from "@/lib/supabase"
 import type { ContractPeriod } from "@/types"
+import { useTheme } from "@/context/ThemeContext"
 
 interface OrderFormProps {
   defaults: {
@@ -27,7 +29,10 @@ interface OrderFormProps {
 }
 
 export default function OrderForm({ defaults }: OrderFormProps) {
-  const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const { theme } = useTheme()
 
   const {
     register,
@@ -66,25 +71,72 @@ export default function OrderForm({ defaults }: OrderFormProps) {
 
   async function onSubmit(data: OrderFormData) {
     if (data.honeypot) return
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    setSubmitted(true)
-  }
+    if (!captchaToken) {
+      setSubmitError("Proszę potwierdzić, że nie jesteś robotem.")
+      return
+    }
+    setSubmitError(null)
 
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center py-8">
-        <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-          <CheckCircle className="h-8 w-8 text-green-500" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">Zamowienie przyjete!</h3>
-        <p className="text-muted-foreground">
-          Dziekujemy za zlozenie zamowienia
-          {internetPkg ? ` na pakiet ${internetPkg.name}` : ""}.
-          Skontaktujemy sie z Toba w ciagu 24 godzin, aby potwierdzic
-          szczegoly.
-        </p>
-      </div>
-    )
+    try {
+      const monthlyTotal =
+        (internetPricing?.monthlyPrice || 0) + (tvPricing?.monthlyPrice || 0)
+      const onetimeTotal =
+        (internetPricing?.activationFee || 0) +
+        (internetPricing?.installationFee || 0) +
+        (tvPricing?.activationFee || 0) +
+        (tvPricing?.installationFee || 0)
+
+      const techMeta = internetPkg ? technologyMeta[internetPkg.technology] : null
+
+      const { data: result, error } = await supabase.functions.invoke(
+        "create-order",
+        {
+          body: {
+            internetPackageId: internetPkg?.id || null,
+            internetPackageName: internetPkg
+              ? `${internetPkg.name} (${techMeta?.shortLabel || ""})`
+              : null,
+            internetPeriod: internetPricing?.period || null,
+            internetMonthlyPrice: internetPricing?.monthlyPrice || null,
+            internetActivationFee: internetPricing?.activationFee || null,
+            internetInstallationFee: internetPricing?.installationFee || null,
+            tvPackageId: tvPkg?.id || null,
+            tvPackageName: tvPkg?.name || null,
+            tvPeriod: tvPricing?.period || null,
+            tvMonthlyPrice: tvPricing?.monthlyPrice || null,
+            tvActivationFee: tvPricing?.activationFee || null,
+            tvInstallationFee: tvPricing?.installationFee || null,
+            tvAddons: [],
+            monthlyTotal,
+            onetimeTotal,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            city: data.city,
+            street: data.street || "",
+            building: data.building,
+            postalCode: data.postalCode,
+            installationNotes: data.installationNotes || "",
+            captchaToken,
+          },
+        }
+      )
+
+      if (error) throw new Error(error.message)
+      if (!result?.orderId) throw new Error("Nie udało się złożyć zamówienia")
+
+      // Redirect to success page
+      window.location.href = `/zamowienie/sukces?order_id=${result.orderId}`
+    } catch (err) {
+      console.error("Checkout error:", err)
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : "Wystąpił błąd podczas składania zamówienia. Spróbuj ponownie."
+      )
+      recaptchaRef.current?.reset()
+      setCaptchaToken(null)
+    }
   }
 
   return (
@@ -94,33 +146,12 @@ export default function OrderForm({ defaults }: OrderFormProps) {
         <input type="text" tabIndex={-1} {...register("honeypot")} />
       </div>
 
-      {/* Package Selection */}
+      {/* Package Selection — static display (no dropdown) */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide text-center">
           Wybrany pakiet internetu
         </h3>
-        <select
-          id="order-internet"
-          {...register("internetPackageId")}
-          className="w-full h-10 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none"
-        >
-          <option value="">Wybierz pakiet...</option>
-          {allInternetPackages.map((pkg) => {
-            const meta = technologyMeta[pkg.technology]
-            const price = pkg.pricing.find((p) => p.period === "24m")
-            return (
-              <option key={pkg.id} value={pkg.id}>
-                {pkg.name} ({meta.shortLabel}) &mdash;{" "}
-                {price?.monthlyPrice || pkg.pricing[0].monthlyPrice} zł/mies.
-              </option>
-            )
-          })}
-        </select>
-        {errors.internetPackageId && (
-          <p className="text-sm text-destructive mt-1">
-            {errors.internetPackageId.message}
-          </p>
-        )}
+        <input type="hidden" {...register("internetPackageId")} />
       </div>
 
       {/* Hidden fields for period and TV */}
@@ -184,7 +215,7 @@ export default function OrderForm({ defaults }: OrderFormProps) {
 
       {/* Personal Data */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide text-center">
           Dane kontaktowe
         </h3>
         <div className="space-y-4">
@@ -254,7 +285,7 @@ export default function OrderForm({ defaults }: OrderFormProps) {
 
       {/* Address */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide text-center">
           Adres instalacji
         </h3>
         <div className="space-y-4">
@@ -375,6 +406,20 @@ export default function OrderForm({ defaults }: OrderFormProps) {
         </p>
       )}
 
+      {/* reCAPTCHA */}
+      {import.meta.env.VITE_RECAPTCHA_SITE_KEY && (
+        <div className="flex justify-center">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+            onChange={(token) => setCaptchaToken(token)}
+            onExpired={() => setCaptchaToken(null)}
+            onErrored={() => setCaptchaToken(null)}
+            theme={theme === "dark" ? "dark" : "light"}
+          />
+        </div>
+      )}
+
       {/* Submit */}
       <Button
         type="submit"
@@ -393,6 +438,13 @@ export default function OrderForm({ defaults }: OrderFormProps) {
           </>
         )}
       </Button>
+
+      {submitError && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {submitError}
+        </div>
+      )}
     </form>
   )
 }

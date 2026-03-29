@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Zap, Cable, Wifi, ArrowRight } from "lucide-react"
+import { Zap, Cable, Network, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { technologyMeta } from "@/data/packages"
 import type { CoverageCheckResult, TechCategory } from "@/types"
@@ -11,24 +11,21 @@ interface TechnologyOverviewProps {
 }
 
 const techIcons: Record<TechCategory, React.ElementType> = {
-  gpon: Zap,
-  bsa: Cable,
-  docsis: Wifi,
-  radio: Wifi,
+  ftth_dom: Zap,
+  ftth_blok: Cable,
+  ftth_syntis: Network,
 }
 
 const techColors: Record<TechCategory, string> = {
-  gpon: "from-blue-500/20 to-blue-600/5 border-blue-500/30",
-  bsa: "from-violet-500/20 to-violet-600/5 border-violet-500/30",
-  docsis: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
-  radio: "from-amber-500/20 to-amber-600/5 border-amber-500/30",
+  ftth_dom: "from-blue-500/20 to-blue-600/5 border-blue-500/30",
+  ftth_blok: "from-violet-500/20 to-violet-600/5 border-violet-500/30",
+  ftth_syntis: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
 }
 
 const techIconColors: Record<TechCategory, string> = {
-  gpon: "text-blue-500",
-  bsa: "text-violet-500",
-  docsis: "text-emerald-500",
-  radio: "text-amber-500",
+  ftth_dom: "text-blue-500",
+  ftth_blok: "text-violet-500",
+  ftth_syntis: "text-emerald-500",
 }
 
 const containerVariants = {
@@ -101,6 +98,31 @@ export default function TechnologyOverview({
           )
         })}
       </motion.div>
+
+      {/* Info about dual TV availability (DOCSIS/GPON BLOK addresses) */}
+      {result.tvDeliveryTypes.includes("iptv") &&
+        result.tvDeliveryTypes.includes("dvb_c") && (
+          <motion.div
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-background/80 flex items-center justify-center text-orange-500">
+                <Cable className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm">
+                  Kabel koncentryczny — telewizja DVB-C
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Pod Twoim adresem dostępna jest również telewizja przez kabel koncentryczny (DVB-C) — niezależnie od internetu
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <Button onClick={onProceed} className="flex-1">

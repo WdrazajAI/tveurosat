@@ -1,0 +1,86 @@
+-- Migration: Add category field to tv_channels for tab-based filtering
+-- Date: 2026-03-28
+-- Categories: Ogólne, Filmy i seriale, Informacje, Styl życia, Sport, Dokumenty, Muzyka, Dzieci
+
+-- 1. Add category column
+ALTER TABLE tv_channels ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Ogólne';
+CREATE INDEX IF NOT EXISTS idx_tv_channels_category ON tv_channels(category);
+
+-- 2. Assign categories based on channel names
+-- Sport
+UPDATE tv_channels SET category = 'Sport' WHERE name IN (
+  'TVP SPORT HD', 'EUROSPORT 1', 'EUROSPORT 2',
+  'POLSAT SPORT', 'POLSAT SPORT EXTRA', 'POLSAT SPORT NEWS', 'POLSAT SPORT FIGHT',
+  'ELEVEN SPORTS 1', 'ELEVEN SPORTS 2', 'ELEVEN SPORTS 3', 'ELEVEN SPORTS 4',
+  'CANAL+ SPORT', 'CANAL+ SPORT 2',
+  'POLSAT GAMES'
+);
+
+-- Filmy i seriale
+UPDATE tv_channels SET category = 'Filmy i seriale' WHERE name IN (
+  'POLSAT FILM', 'ALE KINO+', 'KINO POLSKA', 'KINO TV',
+  'FILMBOX PREMIUM', 'FILMBOX EXTRA', 'FILMBOX FAMILY',
+  'COMEDY CENTRAL POLSKA', 'FOX', 'FOX COMEDY',
+  'AXN', 'AXN WHITE', 'AXN BLACK',
+  'STOPKLATKA', 'TVP SERIALE', 'NOVELA TV',
+  'TVN FABUŁA HD', 'POLSAT SERIALE',
+  'CANAL+ PREMIUM', 'CANAL+ SERIALE', 'CANAL+ FAMILY', 'CANAL+ 1',
+  'TVP HD', 'BBC BRIT', 'POWER TV'
+);
+
+-- Informacje
+UPDATE tv_channels SET category = 'Informacje' WHERE name IN (
+  'TVP INFO', 'TVN 24', 'TVN 24 BiS',
+  'POLSAT NEWS', 'POLSAT NEWS 2', 'WYDARZENIA 24',
+  'REPUBLIKA TV', 'wPOLSCE.TV',
+  'FRANCE 24 HD (ENGLISH)', 'FRANCE 24 HD (FRANCAIS)',
+  'DW EUROPA', 'BBC WORLD NEWS',
+  'TVP WORLD', 'TVP WILNO', 'BELSAT TV',
+  'PR24'
+);
+
+-- Styl życia
+UPDATE tv_channels SET category = 'Styl życia' WHERE name IN (
+  'FOOD NETWORK', 'HGTV', 'TVN TURBO',
+  'DOMO+', 'KUCHNIA+', 'HOME TV',
+  'TLC POLAND', 'TRAVEL CHANNEL',
+  'TVN STYLE HD', 'POLSAT CAFE HD',
+  'TVP KOBIETA', 'BBC LIFESTYLE',
+  'POLSAT PLAY HD'
+);
+
+-- Dokumenty
+UPDATE tv_channels SET category = 'Dokumenty' WHERE name IN (
+  'DISCOVERY CHANNEL', 'DISCOVERY LIFE', 'DISCOVERY HISTORIA',
+  'DISCOVERY TURBO EXTRA', 'DISCOVERY SCIENCE', 'DISCOVER ID',
+  'NATIONAL GEOGRAPHIC', 'NAT GEO WILD', 'NATIONAL GEO',
+  'ANIMAL PLANET POLAND',
+  'PLANETE+', 'TVP DOKUMENT',
+  'POLSAT VIASAT EXPLORER HD', 'POLSAT VIASAT HISTORY',
+  'BBC EARTH', 'CANAL+ DOKUMENT', 'POLSAT DOCU',
+  'WATER PLANET', 'TVP HISTORIA'
+);
+
+-- Muzyka
+UPDATE tv_channels SET category = 'Muzyka' WHERE name IN (
+  'NICK MUSIC', '4FUN TV', 'GOLD TV', 'ESKA TV', 'POLO TV',
+  '4FUN FIT AND DANCE', 'KINO POLSKA MUZYKA', 'VOX MUSIC TV',
+  'STARS TV', '4FUN GOLD HITS', 'POLSAT MUSIC',
+  'ESKA TV EXTRA', 'DISCO POLO MUSIC', 'ESKA ROCK', 'MUSIC BOX UA',
+  'PR1', 'PR2', 'PR3', 'TOK FM', 'MUZO.FM',
+  'RMF MAXXX', 'RMF CLASSIC', 'ZŁOTE PRZEBOJE'
+);
+
+-- Dzieci
+UPDATE tv_channels SET category = 'Dzieci' WHERE name IN (
+  'MINIMINI+', 'TELETOON', 'BBC CBEEBIES',
+  'DISNEY CHANNEL', 'TVP ABC',
+  'DUCK TV', 'DUCK TV PLUS'
+);
+
+-- Remaining channels stay as 'Ogólne' (default):
+-- TVP 1 HD, TVP 2 HD, POLSAT HD, TVN HD, TV 4 HD, TVN7 HD, POLSAT 2 HD,
+-- TV TRWAM, TVS HD, TV6 HD, TV PULS HD, TELE 5 HD, POLONIA 1 HD, METRO TV HD,
+-- TTV HD, WP 1, NOWA TV, PULS 2, TVP ROZRYWKA, FOKUS TV, SUPER POLSAT,
+-- ZOOM TV, POLSAT RODZINA, TVP3 WARSZAWA, TVP KULTURA, TVP POLONIA,
+-- ANTENA TV, REKLAMA TVEUROSAT, JASNA GÓRA

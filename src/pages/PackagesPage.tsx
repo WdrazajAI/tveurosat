@@ -11,11 +11,12 @@ import type { ServiceChoice } from "@/components/packages/ServiceSelector"
 import InternetPackageSelector from "@/components/packages/InternetPackageSelector"
 import TVAddonSelector from "@/components/packages/TVAddonSelector"
 import OrderSummary from "@/components/packages/OrderSummary"
-import { getTVPackagesForAddress } from "@/data/packages"
+import { allTVPackages } from "@/data/packages"
 import type {
   CoverageCheckResult,
   InternetPackage,
   TVPackage,
+  TVAddon,
   ContractPeriod,
 } from "@/types"
 
@@ -38,6 +39,7 @@ export default function PackagesPage() {
   const [selectedTV, setSelectedTV] = useState<TVPackage | null>(null)
   const [selectedTVPeriod, setSelectedTVPeriod] =
     useState<ContractPeriod>("24m")
+  const [selectedTVAddons, setSelectedTVAddons] = useState<TVAddon[]>([])
 
   const location = useLocation()
 
@@ -51,7 +53,7 @@ export default function PackagesPage() {
           setStep("results")
         }
       }
-      // radio_only and not_covered stay on address step with result shown
+      // not_covered stays on address step with result shown
     },
     []
   )
@@ -70,6 +72,7 @@ export default function PackagesPage() {
     setCoverageResult(null)
     setSelectedInternet(null)
     setSelectedTV(null)
+    setSelectedTVAddons([])
     setServiceChoice("both")
     setStep("address")
   }, [])
@@ -108,9 +111,10 @@ export default function PackagesPage() {
   )
 
   const handleTVSelected = useCallback(
-    (pkg: TVPackage, period: ContractPeriod) => {
+    (pkg: TVPackage, period: ContractPeriod, addons: TVAddon[]) => {
       setSelectedTV(pkg)
       setSelectedTVPeriod(period)
+      setSelectedTVAddons(addons)
       setStep("summary")
     },
     []
@@ -121,10 +125,15 @@ export default function PackagesPage() {
     setStep("summary")
   }, [])
 
-  // Check if TV packages are available for this address
+  // Service availability based on address technology
   const hasTVOptions =
     coverageResult?.status === "covered" &&
-    getTVPackagesForAddress(coverageResult.technologies).length > 0
+    coverageResult.tvAvailable &&
+    allTVPackages.length > 0
+
+  const hasInternetOptions =
+    coverageResult?.status === "covered" &&
+    coverageResult.internetAvailable
 
   // Determine effective step for progress indicator
   const effectiveStep =
@@ -187,6 +196,7 @@ export default function PackagesPage() {
                     )
                   }
                   hasTVOptions={hasTVOptions}
+                  hasInternetOptions={hasInternetOptions}
                 />
               </StepWrapper>
             )}
@@ -207,7 +217,7 @@ export default function PackagesPage() {
             {step === "tv" && coverageResult && (
               <StepWrapper key="tv">
                 <TVAddonSelector
-                  technologies={coverageResult.technologies}
+                  tvDeliveryTypes={coverageResult.tvDeliveryTypes}
                   onSelect={handleTVSelected}
                   onSkip={serviceChoice === "both" ? handleSkipTV : undefined}
                   onBack={() =>
@@ -230,6 +240,7 @@ export default function PackagesPage() {
                     internetPeriod={selectedPeriod}
                     tvPackage={selectedTV}
                     tvPeriod={selectedTVPeriod}
+                    tvAddons={selectedTVAddons}
                     onBack={() =>
                       serviceChoice === "internet"
                         ? setStep("internet")

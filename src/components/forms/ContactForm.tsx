@@ -1,14 +1,21 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import ReCAPTCHA from "react-google-recaptcha"
 import { Send, CheckCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { contactFormSchema, contactSubjects, type ContactFormData } from "@/lib/form-schemas"
+import { supabase } from "@/lib/supabase"
+import { useTheme } from "@/context/ThemeContext"
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const { theme } = useTheme()
 
   const {
     register,
@@ -23,12 +30,49 @@ export default function ContactForm() {
   })
 
   async function onSubmit(data: ContactFormData) {
-    // Honeypot check
     if (data.honeypot) return
+    if (!captchaToken) {
+      setSubmitError("Proszę potwierdzić, że nie jesteś robotem.")
+      return
+    }
+    setSubmitError(null)
 
-    // MVP: simulate submission
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    setSubmitted(true)
+    try {
+      // Save to Supabase
+      const { error: dbError } = await supabase.from("contact_messages").insert({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+      })
+
+      if (dbError) throw new Error(dbError.message)
+
+      // Send email notification to admin via Edge Function
+      try {
+        await supabase.functions.invoke("send-contact-email", {
+          body: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            subject: data.subject,
+            message: data.message,
+            captchaToken,
+          },
+        })
+      } catch {
+        // Email is secondary - don't fail if it doesn't work
+        console.warn("Email notification failed, but message was saved")
+      }
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error("Contact form error:", err)
+      setSubmitError("Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.")
+      recaptchaRef.current?.reset()
+      setCaptchaToken(null)
+    }
   }
 
   if (submitted) {
@@ -154,6 +198,20 @@ export default function ContactForm() {
         <p className="text-sm text-destructive -mt-3">{errors.consent.message}</p>
       )}
 
+      {/* reCAPTCHA */}
+      {import.meta.env.VITE_RECAPTCHA_SITE_KEY && (
+        <div className="flex justify-center">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+            onChange={(token) => setCaptchaToken(token)}
+            onExpired={() => setCaptchaToken(null)}
+            onErrored={() => setCaptchaToken(null)}
+            theme={theme === "dark" ? "dark" : "light"}
+          />
+        </div>
+      )}
+
       {/* Submit */}
       <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl font-semibold">
         {isSubmitting ? (
@@ -168,6 +226,10 @@ export default function ContactForm() {
           </>
         )}
       </Button>
+
+      {submitError && (
+        <p className="text-sm text-destructive text-center mt-2">{submitError}</p>
+      )}
     </form>
   )
 }

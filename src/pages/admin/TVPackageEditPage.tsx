@@ -10,7 +10,7 @@ import { useTVPackageItem, useTVPackagesAdmin } from "@/hooks/use-packages"
 
 const types = [
   { value: "iptv", label: "IPTV" },
-  { value: "cable", label: "Telewizja kablowa" },
+  { value: "dvb_c", label: "DVB-C (Telewizja kablowa)" },
 ]
 
 const defaultPricing: TVPackageFormData["pricing"] = [

@@ -6,6 +6,8 @@ import {
   FileText,
   Package,
   MapPin,
+  Tv,
+  ShoppingCart,
   X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -16,7 +18,9 @@ const navItems = [
   { to: "/admin/faq", label: "FAQ", icon: HelpCircle },
   { to: "/admin/dokumenty", label: "Dokumenty", icon: FileText },
   { to: "/admin/pakiety", label: "Pakiety", icon: Package },
+  { to: "/admin/kanaly", label: "Kanały TV", icon: Tv },
   { to: "/admin/zasieg", label: "Zasięg", icon: MapPin },
+  { to: "/admin/zamowienia", label: "Zamówienia", icon: ShoppingCart },
 ]
 
 interface AdminSidebarProps {

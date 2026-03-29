@@ -15,6 +15,7 @@ const FAQPage = lazy(() => import("@/pages/FAQPage"))
 const DocumentsPage = lazy(() => import("@/pages/DocumentsPage"))
 const ClientZonePage = lazy(() => import("@/pages/ClientZonePage"))
 const OrderPage = lazy(() => import("@/pages/OrderPage"))
+const OrderSuccessPage = lazy(() => import("@/pages/OrderSuccessPage"))
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"))
 
 // Lazy-loaded admin pages
@@ -31,6 +32,9 @@ const PackagesListPage = lazy(() => import("@/pages/admin/PackagesListPage"))
 const InternetPackageEditPage = lazy(() => import("@/pages/admin/InternetPackageEditPage"))
 const TVPackageEditPage = lazy(() => import("@/pages/admin/TVPackageEditPage"))
 const CoverageImportPage = lazy(() => import("@/pages/admin/CoverageImportPage"))
+const OrdersListPage = lazy(() => import("@/pages/admin/OrdersListPage"))
+const ChannelGroupsPage = lazy(() => import("@/pages/admin/ChannelGroupsPage"))
+const ChannelGroupEditPage = lazy(() => import("@/pages/admin/ChannelGroupEditPage"))
 
 function PageLoader() {
   return (
@@ -54,6 +58,7 @@ function App() {
           <Route path="/sprawdz-dostepnosc" element={<Navigate to="/pakiety" replace />} />
           <Route path="/pakiety" element={<PackagesPage />} />
           <Route path="/zamowienie" element={<OrderPage />} />
+          <Route path="/zamowienie/sukces" element={<OrderSuccessPage />} />
           <Route path="/kontakt" element={<ContactPage />} />
           <Route path="/aktualnosci" element={<NewsPage />} />
           <Route path="/aktualnosci/:slug" element={<NewsArticlePage />} />
@@ -78,7 +83,10 @@ function App() {
           <Route path="pakiety" element={<PackagesListPage />} />
           <Route path="pakiety/internet/:id" element={<InternetPackageEditPage />} />
           <Route path="pakiety/tv/:id" element={<TVPackageEditPage />} />
+          <Route path="kanaly" element={<ChannelGroupsPage />} />
+          <Route path="kanaly/:id" element={<ChannelGroupEditPage />} />
           <Route path="zasieg" element={<CoverageImportPage />} />
+          <Route path="zamowienia" element={<OrdersListPage />} />
         </Route>
       </Routes>
       </Suspense>

@@ -8,6 +8,7 @@ interface ServiceSelectorProps {
   onSelect: (choice: ServiceChoice) => void
   onBack: () => void
   hasTVOptions: boolean
+  hasInternetOptions: boolean
 }
 
 const containerVariants = {
@@ -24,7 +25,11 @@ export default function ServiceSelector({
   onSelect,
   onBack,
   hasTVOptions,
+  hasInternetOptions,
 }: ServiceSelectorProps) {
+  const showBoth = hasTVOptions && hasInternetOptions
+  const optionCount = (hasInternetOptions ? 1 : 0) + (showBoth ? 1 : 0) + (hasTVOptions ? 1 : 0)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -49,25 +54,33 @@ export default function ServiceSelector({
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        className={`grid gap-4 ${
+          optionCount === 1
+            ? "grid-cols-1 max-w-xs mx-auto"
+            : optionCount === 2
+              ? "grid-cols-1 sm:grid-cols-2 max-w-xl mx-auto"
+              : "grid-cols-1 sm:grid-cols-3"
+        }`}
       >
         {/* Internet only */}
-        <motion.button
-          variants={itemVariants}
-          onClick={() => onSelect("internet")}
-          className="group p-6 rounded-2xl border border-border bg-card text-center hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
-        >
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/15 transition-colors">
-            <Wifi className="h-6 w-6 text-primary" />
-          </div>
-          <h4 className="text-base font-semibold mb-1">Internet</h4>
-          <p className="text-sm text-muted-foreground">
-            Szybki internet światłowodowy lub kablowy
-          </p>
-        </motion.button>
+        {hasInternetOptions && (
+          <motion.button
+            variants={itemVariants}
+            onClick={() => onSelect("internet")}
+            className="group p-6 rounded-2xl border border-border bg-card text-center hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300"
+          >
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-primary/15 transition-colors">
+              <Wifi className="h-6 w-6 text-primary" />
+            </div>
+            <h4 className="text-base font-semibold mb-1">Internet</h4>
+            <p className="text-sm text-muted-foreground">
+              Szybki internet światłowodowy
+            </p>
+          </motion.button>
+        )}
 
         {/* Both - center position */}
-        {hasTVOptions && (
+        {showBoth && (
           <motion.button
             variants={itemVariants}
             onClick={() => onSelect("both")}
@@ -100,7 +113,7 @@ export default function ServiceSelector({
             </div>
             <h4 className="text-base font-semibold mb-1">Telewizja</h4>
             <p className="text-sm text-muted-foreground">
-              Telewizja cyfrowa IPTV lub kablowa
+              Telewizja DVB-C lub IPTV
             </p>
           </motion.button>
         )}

@@ -6,6 +6,7 @@ import { technologyMeta } from "@/data/packages"
 import type {
   InternetPackage,
   TVPackage,
+  TVAddon,
   ContractPeriod,
 } from "@/types"
 
@@ -15,6 +16,7 @@ interface OrderSummaryProps {
   internetPeriod: ContractPeriod
   tvPackage: TVPackage | null
   tvPeriod: ContractPeriod
+  tvAddons?: TVAddon[]
   onBack: () => void
   onReset: () => void
 }
@@ -30,12 +32,29 @@ function formatSpeed(mbps: number): string {
   return mbps >= 1000 ? `${mbps / 1000} Gb/s` : `${mbps} Mb/s`
 }
 
+function getAddonPrice(addon: TVAddon, period: ContractPeriod): number {
+  if (addon.pricing) {
+    const p = addon.pricing.find((pr) => pr.period === period)
+    if (p) return p.monthlyPrice
+  }
+  return addon.monthlyPrice
+}
+
+function getAddonActivation(addon: TVAddon, period: ContractPeriod): number {
+  if (addon.pricing) {
+    const p = addon.pricing.find((pr) => pr.period === period)
+    if (p) return p.activationFee
+  }
+  return 0
+}
+
 export default function OrderSummary({
   address,
   internetPackage,
   internetPeriod,
   tvPackage,
   tvPeriod,
+  tvAddons = [],
   onBack,
   onReset,
 }: OrderSummaryProps) {
@@ -44,10 +63,23 @@ export default function OrderSummary({
     : null
   const tvPricing = tvPackage ? getPricing(tvPackage, tvPeriod) : null
 
+  const addonsMonthly = tvAddons.reduce(
+    (sum, a) => sum + getAddonPrice(a, tvPeriod),
+    0
+  )
+  const addonsActivation = tvAddons.reduce(
+    (sum, a) => sum + getAddonActivation(a, tvPeriod),
+    0
+  )
+
   const monthlyTotal =
-    (internetPricing?.monthlyPrice || 0) + (tvPricing?.monthlyPrice || 0)
+    (internetPricing?.monthlyPrice || 0) +
+    (tvPricing?.monthlyPrice || 0) +
+    addonsMonthly
   const activationTotal =
-    (internetPricing?.activationFee || 0) + (tvPricing?.activationFee || 0)
+    (internetPricing?.activationFee || 0) +
+    (tvPricing?.activationFee || 0) +
+    addonsActivation
   const installationTotal =
     (internetPricing?.installationFee || 0) + (tvPricing?.installationFee || 0)
 
@@ -69,12 +101,15 @@ export default function OrderSummary({
     orderParams.set("tv", tvPackage.id)
     orderParams.set("tvPeriod", tvPeriod)
   }
+  if (tvAddons.length > 0) {
+    orderParams.set("addons", tvAddons.map((a) => a.id).join(","))
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="max-w-xl mx-auto space-y-6"
     >
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Podsumowanie</h3>
@@ -138,9 +173,9 @@ export default function OrderSummary({
               <p>
                 Podłączenie:{" "}
                 {internetPricing.installationFee === 0 ? (
-                  <span className="text-green-600 dark:text-green-400">Gratis</span>
+                  <span className="text-green-600 dark:text-green-400">Gratis*</span>
                 ) : (
-                  `${internetPricing.installationFee} zł`
+                  `${internetPricing.installationFee} zł*`
                 )}
               </p>
             </div>
@@ -160,7 +195,7 @@ export default function OrderSummary({
               </span>
             </div>
             <div className="text-xs text-muted-foreground space-y-0.5 ml-6">
-              <p>{tvPackage.channels}+ kanałów</p>
+              <p>{tvPackage.channels} kanałów</p>
               <p>{tvPricing.periodLabel}</p>
               <p>
                 Aktywacja:{" "}
@@ -173,14 +208,37 @@ export default function OrderSummary({
               <p>
                 Podłączenie:{" "}
                 {tvPricing.installationFee === 0 ? (
-                  <span className="text-green-600 dark:text-green-400">Gratis</span>
+                  <span className="text-green-600 dark:text-green-400">Gratis*</span>
                 ) : (
-                  `${tvPricing.installationFee} zł`
+                  `${tvPricing.installationFee} zł*`
                 )}
               </p>
             </div>
           </div>
         )}
+
+        {/* TV Addons */}
+        {tvAddons.map((addon) => {
+          const price = getAddonPrice(addon, tvPeriod)
+          const activation = getAddonActivation(addon, tvPeriod)
+          return (
+            <div key={addon.id} className="p-4 rounded-xl bg-card border border-border">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">{addon.name}</span>
+                </div>
+                <span className="font-bold text-primary">
+                  +{price} zł/mies.
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground ml-6">
+                {addon.tagline && <p>{addon.tagline}</p>}
+                {activation > 0 && <p>Aktywacja: {activation} zł</p>}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Price summary */}
@@ -205,14 +263,28 @@ export default function OrderSummary({
               )}
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Podłączenie</span>
+              <span className="text-muted-foreground">Podłączenie*</span>
               {installationTotal === 0 ? (
                 <span className="text-green-600 dark:text-green-400 font-medium">Gratis</span>
               ) : (
                 <span>{installationTotal} zł</span>
               )}
             </div>
+            <p className="text-[10px] text-muted-foreground/70 italic mt-1">
+              * Opłata za podłączenie podlega indywidualnej ocenie
+            </p>
           </div>
+          {/* Total one-time cost */}
+          {(activationTotal > 0 || installationTotal > 0) && (
+            <div className="border-t border-primary/20 pt-2 mt-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">Opłata na start</span>
+                <span className="font-bold">
+                  {activationTotal + installationTotal} zł
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

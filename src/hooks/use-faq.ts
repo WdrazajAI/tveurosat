@@ -32,7 +32,6 @@ export function useFAQList() {
     const { data, error } = await supabase
       .from("faq")
       .select("*")
-      .order("category")
       .order("order", { ascending: true })
 
     if (error || !data) {

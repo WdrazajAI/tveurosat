@@ -9,10 +9,9 @@ import { internetPackageSchema, type InternetPackageFormData, generateSlug } fro
 import { useInternetPackageItem, useInternetPackagesAdmin } from "@/hooks/use-packages"
 
 const technologies = [
-  { value: "gpon", label: "GPON (Światłowód)" },
-  { value: "bsa", label: "BSA (Światłowód Orange)" },
-  { value: "docsis", label: "DOCSIS (Kablowy)" },
-  { value: "radio", label: "Radio" },
+  { value: "ftth_dom", label: "FTTH Dom (Światłowód — dom jednorodzinny)" },
+  { value: "ftth_blok", label: "FTTH Blok (Światłowód — blok)" },
+  { value: "ftth_syntis", label: "FTTH Syntis (Światłowód — infrastruktura operatora)" },
 ]
 
 const defaultPricing: InternetPackageFormData["pricing"] = [
@@ -41,7 +40,7 @@ export default function InternetPackageEditPage() {
   } = useForm<InternetPackageFormData>({
     resolver: zodResolver(internetPackageSchema),
     defaultValues: {
-      technology: "gpon",
+      technology: "ftth_dom",
       features: [],
       pricing: defaultPricing,
       featured: false,
@@ -157,7 +156,7 @@ export default function InternetPackageEditPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1.5">Slug *</label>
-            <Input {...register("slug")} placeholder="np. gpon-100" />
+            <Input {...register("slug")} placeholder="np. ftth-dom-start" />
             {errors.slug && <p className="text-sm text-destructive mt-1">{errors.slug.message}</p>}
           </div>
         </div>

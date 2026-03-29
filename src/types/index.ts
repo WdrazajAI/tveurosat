@@ -1,5 +1,8 @@
 // === Technology Categories ===
-export type TechCategory = "gpon" | "bsa" | "docsis" | "radio"
+export type TechCategory = "ftth_dom" | "ftth_blok" | "ftth_syntis"
+
+// === TV Delivery Types ===
+export type TVDeliveryType = "dvb_c" | "iptv"
 
 // === Coverage Types ===
 export interface CoverageCity {
@@ -35,7 +38,7 @@ export interface CoverageDatabase {
 }
 
 export interface CoverageCheckResult {
-  status: "covered" | "radio_only" | "not_covered"
+  status: "covered" | "not_covered"
   address: {
     city: string
     street: string
@@ -43,6 +46,9 @@ export interface CoverageCheckResult {
   }
   technologies: TechCategory[]
   maxSpeeds: Partial<Record<TechCategory, { down: number; up: number }>>
+  internetAvailable: boolean
+  tvAvailable: boolean
+  tvDeliveryTypes: TVDeliveryType[]
   message: string
 }
 
@@ -74,7 +80,7 @@ export interface InternetPackage {
 export interface TVPackage {
   id: string
   name: string
-  type: "iptv" | "cable"
+  type: TVDeliveryType
   tagline: string
   channels: number
   features: string[]
@@ -82,6 +88,47 @@ export interface TVPackage {
   featured: boolean
   order: number
   tariffCode?: string
+}
+
+// === TV Addons ===
+export interface TVAddon {
+  id: string
+  name: string
+  type: TVDeliveryType
+  monthlyPrice: number
+  /** Full pricing tiers — when present, use instead of flat monthlyPrice */
+  pricing?: PricingOption[]
+  channels?: number
+  tagline?: string
+}
+
+// === TV Channels ===
+export type ChannelCategory =
+  | "Ogólne"
+  | "Filmy i seriale"
+  | "Informacje"
+  | "Styl życia"
+  | "Sport"
+  | "Dokumenty"
+  | "Muzyka"
+  | "Dzieci"
+
+export interface TVChannelGroup {
+  id: string
+  slug: string
+  name: string
+  description?: string
+  order: number
+  channels: TVChannel[]
+}
+
+export interface TVChannel {
+  id: string
+  name: string
+  logoUrl?: string
+  groupId: string
+  order: number
+  category: ChannelCategory
 }
 
 // === News types ===

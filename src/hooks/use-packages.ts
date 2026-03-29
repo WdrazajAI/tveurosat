@@ -130,7 +130,7 @@ export function useInternetPackageItem(id: string | undefined) {
     supabase
       .from("internet_packages")
       .select("*")
-      .eq("id", id)
+      .eq("slug", id)
       .single()
       .then(({ data, error }) => {
         if (!error && data) setPkg(data as InternetRow)
@@ -150,7 +150,7 @@ export function useTVPackageItem(id: string | undefined) {
     supabase
       .from("tv_packages")
       .select("*")
-      .eq("id", id)
+      .eq("slug", id)
       .single()
       .then(({ data, error }) => {
         if (!error && data) setPkg(data as TVRow)
@@ -168,12 +168,12 @@ export function useInternetPackagesAdmin() {
   }
 
   const update = async (id: string, data: Partial<InternetRow>) => {
-    const { error } = await supabase.from("internet_packages").update(data).eq("id", id)
+    const { error } = await supabase.from("internet_packages").update(data).eq("slug", id)
     return { error: error?.message ?? null }
   }
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("internet_packages").delete().eq("id", id)
+    const { error } = await supabase.from("internet_packages").delete().eq("slug", id)
     return { error: error?.message ?? null }
   }
 
@@ -187,12 +187,12 @@ export function useTVPackagesAdmin() {
   }
 
   const update = async (id: string, data: Partial<TVRow>) => {
-    const { error } = await supabase.from("tv_packages").update(data).eq("id", id)
+    const { error } = await supabase.from("tv_packages").update(data).eq("slug", id)
     return { error: error?.message ?? null }
   }
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("tv_packages").delete().eq("id", id)
+    const { error } = await supabase.from("tv_packages").delete().eq("slug", id)
     return { error: error?.message ?? null }
   }
 

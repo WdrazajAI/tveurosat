@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus, ArrowUp, ArrowDown } from "lucide-react"
+import { Plus, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import DataTable, { type Column } from "@/components/admin/DataTable"
 import ConfirmDialog from "@/components/admin/ConfirmDialog"
@@ -14,6 +14,15 @@ export default function FAQListPage() {
   const navigate = useNavigate()
   const [deleteTarget, setDeleteTarget] = useState<FAQItem | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [sortBy, setSortBy] = useState<"order" | "category">("order")
+
+  const sortedItems = useMemo(() => {
+    if (sortBy === "order") return items
+    return [...items].sort((a, b) => {
+      const catCmp = a.category.localeCompare(b.category)
+      return catCmp !== 0 ? catCmp : a.order - b.order
+    })
+  }, [items, sortBy])
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -87,9 +96,34 @@ export default function FAQListPage() {
         </Button>
       </div>
 
+      <div className="flex items-center gap-2 mb-4">
+        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">Sortuj:</span>
+        <button
+          onClick={() => setSortBy("order")}
+          className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+            sortBy === "order"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Kolejność na stronie
+        </button>
+        <button
+          onClick={() => setSortBy("category")}
+          className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+            sortBy === "category"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Kategoria
+        </button>
+      </div>
+
       <DataTable
         columns={columns}
-        data={items}
+        data={sortedItems}
         loading={loading}
         onEdit={(item) => navigate(`/admin/faq/${item.id}`)}
         onDelete={setDeleteTarget}

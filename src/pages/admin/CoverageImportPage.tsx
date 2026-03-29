@@ -41,6 +41,90 @@ function formatCellValue(value: string | number | boolean): string {
 const PAGE_SIZE = 10
 const LOAD_MORE_SIZE = 50
 
+// CP1250 single-byte to Unicode mapping for Polish characters
+const CP1250_MAP: Record<number, string> = {
+  0x8C: "Ś", 0x8F: "Ź", 0x9C: "ś", 0x9F: "ź",
+  0xA3: "Ł", 0xA5: "Ą", 0xAF: "Ż", 0xB3: "ł",
+  0xB9: "ą", 0xBF: "ż", 0xC6: "Ć", 0xCA: "Ę",
+  0xD1: "Ń", 0xD3: "Ó", 0xE6: "ć", 0xEA: "ę",
+  0xF1: "ń", 0xF3: "ó",
+}
+
+// Decode a file that has MIXED encoding (some chars UTF-8, some CP1250).
+// This is common in Polish telecom CSV exports where capital letters (Ł, Ż, Ś)
+// are UTF-8 encoded (2 bytes) but lowercase (ł, ę, ó, ń) are CP1250 (1 byte).
+async function detectAndReadFile(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+
+  // First: try pure UTF-8
+  const utf8 = new TextDecoder("utf-8", { fatal: true })
+  try {
+    const result = utf8.decode(bytes)
+    // Pure UTF-8 worked — use it
+    return result
+  } catch {
+    // UTF-8 failed — file has non-UTF-8 bytes
+  }
+
+  // Hybrid decode: process byte-by-byte, try UTF-8 sequences first,
+  // fall back to CP1250 for single bytes in 0x80-0xFF range
+  let result = ""
+  let i = 0
+  while (i < bytes.length) {
+    const b = bytes[i]
+
+    // ASCII range — pass through
+    if (b < 0x80) {
+      result += String.fromCharCode(b)
+      i++
+      continue
+    }
+
+    // Try to decode as UTF-8 multi-byte sequence
+    let seqLen = 0
+    if ((b & 0xE0) === 0xC0) seqLen = 2      // 110xxxxx = 2-byte
+    else if ((b & 0xF0) === 0xE0) seqLen = 3  // 1110xxxx = 3-byte
+    else if ((b & 0xF8) === 0xF0) seqLen = 4  // 11110xxx = 4-byte
+
+    if (seqLen > 0 && i + seqLen <= bytes.length) {
+      // Check if all continuation bytes are valid (10xxxxxx)
+      let validUtf8 = true
+      for (let j = 1; j < seqLen; j++) {
+        if ((bytes[i + j] & 0xC0) !== 0x80) {
+          validUtf8 = false
+          break
+        }
+      }
+
+      if (validUtf8) {
+        // Valid UTF-8 sequence — decode it
+        const slice = bytes.slice(i, i + seqLen)
+        try {
+          result += new TextDecoder("utf-8", { fatal: true }).decode(slice)
+          i += seqLen
+          continue
+        } catch {
+          // Fall through to CP1250
+        }
+      }
+    }
+
+    // Not valid UTF-8 — decode as CP1250
+    if (CP1250_MAP[b]) {
+      result += CP1250_MAP[b]
+    } else if (b >= 0xA0 && b <= 0xFF) {
+      // Latin-1 compatible range
+      result += String.fromCharCode(b)
+    } else {
+      result += "?"
+    }
+    i++
+  }
+
+  return result
+}
+
 export default function CoverageImportPage() {
   const [step, setStep] = useState<ImportStep>("upload")
   const [diff, setDiff] = useState<CoverageDiff | null>(null)
@@ -75,7 +159,7 @@ export default function CoverageImportPage() {
       const file = e.target.files?.[0]
       if (!file) return
 
-      const content = await file.text()
+      const content = await detectAndReadFile(file)
       const rows = parseCSV(content)
 
       if (rows.length === 0) {
@@ -143,14 +227,14 @@ export default function CoverageImportPage() {
             <p className="text-2xl font-bold">{stats.localities.toLocaleString()}</p>
           </div>
           <div className="p-4 rounded-xl bg-card border">
-            <p className="text-sm text-muted-foreground">Technologie</p>
+            <p className="text-sm text-muted-foreground">Oferty (kolumna K)</p>
             <div className="flex flex-wrap gap-1 mt-1">
-              {Object.entries(stats.technologies).map(([tech, count]) => (
+              {Object.entries(stats.technologies).map(([medium, count]) => (
                 <span
-                  key={tech}
+                  key={medium}
                   className="text-xs px-2 py-0.5 bg-muted rounded-full"
                 >
-                  {tech}: {count}
+                  {medium}: {count}
                 </span>
               ))}
             </div>
@@ -197,7 +281,7 @@ export default function CoverageImportPage() {
               <li>• Separator: średnik (;)</li>
               <li>• Wiersz nagłówka: DI;...</li>
               <li>• Wiersze danych: ZS;address_id;simc;locality;...</li>
-              <li>• Kodowanie: UTF-8</li>
+              <li>• Kodowanie: UTF-8, Windows-1250, ISO-8859-2 (auto-detekcja)</li>
             </ul>
           </div>
         </div>

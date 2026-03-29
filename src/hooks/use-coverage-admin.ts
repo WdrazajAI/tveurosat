@@ -59,6 +59,9 @@ export interface CoverageDiff {
 
 // Parse CSV content (format from UKE/operator data)
 export function parseCSVContent(content: string): CSVCoverageRow[] {
+  // Strip BOM (Byte Order Mark) that Windows editors often prepend to UTF-8 files
+  content = content.replace(/^\uFEFF/, "")
+
   const lines = content.split("\n").filter((line) => line.trim())
   const records: CSVCoverageRow[] = []
 
@@ -302,17 +305,17 @@ export function useCoverageImport() {
 // Get coverage statistics
 export async function getCoverageStats() {
   try {
-    // Fetch ALL records with pagination
+    // Fetch ALL records with pagination — use medium (column K) for offer identification
     const data = await fetchAllCoverageRecords<{
-      technology: string
+      medium: string
       locality: string
-    }>("technology, locality")
+    }>("medium, locality")
 
     const technologies: Record<string, number> = {}
     const localities = new Set<string>()
 
     for (const row of data) {
-      technologies[row.technology] = (technologies[row.technology] || 0) + 1
+      technologies[row.medium] = (technologies[row.medium] || 0) + 1
       localities.add(row.locality)
     }
 

@@ -175,7 +175,7 @@ export async function checkCoverage(
   try {
     const result = await checkCoverageFromDB(city, street, building)
     // Only use Supabase result if it's a match or if we trust it
-    if (result.status === "covered" || result.status === "radio_only") {
+    if (result.status === "covered") {
       return result
     }
   } catch (e) {
@@ -191,6 +191,9 @@ export async function checkCoverage(
       address: { city, street, building },
       technologies: [],
       maxSpeeds: {},
+      internetAvailable: false,
+      tvAvailable: false,
+      tvDeliveryTypes: [],
       message:
         "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
     }
@@ -215,33 +218,34 @@ export async function checkCoverage(
       address: { city, street, building },
       technologies: [],
       maxSpeeds: {},
+      internetAvailable: false,
+      tvAvailable: false,
+      tvDeliveryTypes: [],
       message:
         "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
     }
   }
 
-  const nonRadioTechs = match.techs.filter((t) => t.t !== "radio")
-  const hasRadioOnly =
-    nonRadioTechs.length === 0 &&
-    match.techs.some((t) => t.t === "radio")
+  const techCategories = [
+    ...new Set(match.techs.map((t) => t.t)),
+  ] as TechCategory[]
 
-  if (hasRadioOnly) {
+  if (techCategories.length === 0) {
     return {
-      status: "radio_only",
+      status: "not_covered",
       address: { city, street, building },
       technologies: [],
       maxSpeeds: {},
+      internetAvailable: false,
+      tvAvailable: false,
+      tvDeliveryTypes: [],
       message:
-        "Pod Twoim adresem dostępna jest jedynie technologia radiowa, która jest wycofywana. Skontaktuj się z nami, aby omówić dostępne opcje.",
+        "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
     }
   }
 
-  const techCategories = [
-    ...new Set(nonRadioTechs.map((t) => t.t)),
-  ] as TechCategory[]
-
   const maxSpeeds: Partial<Record<TechCategory, { down: number; up: number }>> = {}
-  for (const tech of nonRadioTechs) {
+  for (const tech of match.techs) {
     const existing = maxSpeeds[tech.t]
     if (!existing || tech.d > existing.down) {
       maxSpeeds[tech.t] = { down: tech.d, up: tech.d }
@@ -253,6 +257,9 @@ export async function checkCoverage(
     address: { city, street, building },
     technologies: techCategories,
     maxSpeeds,
+    internetAvailable: true,
+    tvAvailable: true,
+    tvDeliveryTypes: ["iptv"],
     message: "Twój adres jest w naszym zasięgu! Sprawdź dostępne pakiety.",
   }
 }

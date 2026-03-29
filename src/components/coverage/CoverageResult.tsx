@@ -1,11 +1,10 @@
 import { motion } from "framer-motion"
-import { CheckCircle, Zap, Cable, Wifi } from "lucide-react"
+import { CheckCircle, Zap, Cable, Network } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { technologyMeta } from "@/data/packages"
 import type { CoverageCheckResult, TechCategory } from "@/types"
 import OutOfCoverageInfo from "./OutOfCoverageInfo"
-import RadioOnlyNotice from "./RadioOnlyNotice"
 
 interface CoverageResultProps {
   result: CoverageCheckResult
@@ -13,10 +12,9 @@ interface CoverageResultProps {
 }
 
 const techIcons: Record<TechCategory, React.ElementType> = {
-  gpon: Zap,
-  bsa: Cable,
-  docsis: Wifi,
-  radio: Wifi,
+  ftth_dom: Zap,
+  ftth_blok: Cable,
+  ftth_syntis: Network,
 }
 
 export default function CoverageResult({
@@ -26,10 +24,6 @@ export default function CoverageResult({
   const navigate = useNavigate()
   if (result.status === "not_covered") {
     return <OutOfCoverageInfo message={result.message} onReset={onReset} />
-  }
-
-  if (result.status === "radio_only") {
-    return <RadioOnlyNotice result={result} onReset={onReset} />
   }
 
   return (

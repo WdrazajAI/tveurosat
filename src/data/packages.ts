@@ -1,21 +1,23 @@
 import type {
   InternetPackage,
   TVPackage,
+  TVAddon,
   TechCategory,
+  TVDeliveryType,
   PricingOption,
 } from "@/types"
 
-// Pricing helper — placeholder prices, Bartek will update later
+// Pricing helper
 function pricing(
   monthly24: number,
   monthly12: number,
   monthlyIndef: number,
-  activation24 = 0,
-  activation12 = 1,
-  activationIndef = 49,
-  install24 = 0,
-  install12 = 0,
-  installIndef = 99
+  activation24: number,
+  activation12: number,
+  activationIndef: number,
+  install24: number,
+  install12: number,
+  installIndef: number
 ): PricingOption[] {
   return [
     {
@@ -42,259 +44,342 @@ function pricing(
   ]
 }
 
-// === GPON (own infrastructure) ===
-export const gponPackages: InternetPackage[] = [
+// === FTTH Dom jednorodzinny ===
+export const ftthDomPackages: InternetPackage[] = [
   {
-    id: "gpon-100",
+    id: "ftth-dom-start",
     name: "Start",
-    technology: "gpon",
+    technology: "ftth_dom",
     tagline: "Idealny na start — przeglądanie, social media, streaming",
-    speedDown: 100,
-    speedUp: 30,
+    speedDown: 300,
+    speedUp: 100,
     features: [
-      "Prędkość do 100 Mb/s",
+      "Prędkość do 300 Mb/s",
       "Router Wi-Fi w cenie",
       "Bez limitu danych",
       "Wsparcie techniczne 24/7",
     ],
-    pricing: pricing(59, 69, 79),
+    pricing: pricing(79, 89, 99, 69, 99, 199, 299, 399, 499),
     featured: false,
     order: 1,
   },
   {
-    id: "gpon-300",
+    id: "ftth-dom-standard",
     name: "Standard",
-    technology: "gpon",
+    technology: "ftth_dom",
     tagline: "Dla rodziny — streaming 4K, praca zdalna, gry online",
-    speedDown: 300,
-    speedUp: 50,
+    speedDown: 600,
+    speedUp: 200,
     features: [
-      "Prędkość do 300 Mb/s",
+      "Prędkość do 600 Mb/s",
       "Router Wi-Fi 6 w cenie",
       "Bez limitu danych",
       "Priorytetowe wsparcie techniczne",
       "Streaming 4K bez buforowania",
     ],
-    pricing: pricing(89, 99, 109),
+    pricing: pricing(89, 99, 109, 69, 99, 199, 299, 399, 499),
     featured: true,
     order: 2,
   },
   {
-    id: "gpon-600",
+    id: "ftth-dom-premium",
     name: "Premium",
-    technology: "gpon",
+    technology: "ftth_dom",
     tagline: "Dla wymagających — granie, telepraca, wiele urządzeń",
-    speedDown: 600,
+    speedDown: 900,
+    speedUp: 300,
+    features: [
+      "Prędkość do 900 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Priorytetowe wsparcie VIP",
+      "Symetryczny upload 300 Mb/s",
+    ],
+    pricing: pricing(99, 109, 119, 69, 99, 199, 299, 399, 499),
+    featured: false,
+    order: 3,
+  },
+]
+
+// === FTTH Blok (wielorodzinny) ===
+export const ftthBlokPackages: InternetPackage[] = [
+  {
+    id: "ftth-blok-standard",
+    name: "Standard",
+    technology: "ftth_blok",
+    tagline: "Szybki internet dla mieszkania — streaming, praca zdalna",
+    speedDown: 450,
+    speedUp: 200,
+    features: [
+      "Prędkość do 450 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Priorytetowe wsparcie techniczne",
+      "Streaming 4K bez buforowania",
+    ],
+    pricing: pricing(64, 74, 84, 49, 99, 199, 1, 199, 199),
+    featured: true,
+    order: 1,
+  },
+  {
+    id: "ftth-blok-premium",
+    name: "Premium",
+    technology: "ftth_blok",
+    tagline: "Najszybszy internet w bloku — bez kompromisów",
+    speedDown: 900,
+    speedUp: 450,
+    features: [
+      "Prędkość do 900 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Priorytetowe wsparcie VIP",
+      "Symetryczny upload 450 Mb/s",
+    ],
+    pricing: pricing(74, 84, 94, 49, 99, 199, 1, 199, 199),
+    featured: false,
+    order: 2,
+  },
+]
+
+// === FTTH Syntis (infrastruktura innego operatora) ===
+export const ftthSyntisPackages: InternetPackage[] = [
+  {
+    id: "ftth-syntis-start",
+    name: "Start",
+    technology: "ftth_syntis",
+    tagline: "Internet światłowodowy przez infrastrukturę operatora",
+    speedDown: 300,
     speedUp: 100,
+    features: [
+      "Prędkość do 300 Mb/s",
+      "Router Wi-Fi w cenie",
+      "Bez limitu danych",
+      "Wsparcie techniczne 24/7",
+    ],
+    pricing: pricing(79, 94, 109, 69, 99, 199, 299, 399, 499),
+    featured: false,
+    order: 1,
+  },
+  {
+    id: "ftth-syntis-standard",
+    name: "Standard",
+    technology: "ftth_syntis",
+    tagline: "Szybki internet światłowodowy przez sieć operatora",
+    speedDown: 600,
+    speedUp: 200,
     features: [
       "Prędkość do 600 Mb/s",
       "Router Wi-Fi 6 w cenie",
       "Bez limitu danych",
-      "Priorytetowe wsparcie VIP",
-      "Symetryczny upload",
+      "Streaming 4K bez buforowania",
     ],
-    pricing: pricing(119, 129, 139),
+    pricing: pricing(89, 104, 119, 69, 99, 199, 299, 399, 499),
+    featured: true,
+    order: 2,
+  },
+  {
+    id: "ftth-syntis-premium",
+    name: "Premium",
+    technology: "ftth_syntis",
+    tagline: "Wydajny internet światłowodowy przez sieć operatora",
+    speedDown: 900,
+    speedUp: 300,
+    features: [
+      "Prędkość do 900 Mb/s",
+      "Router Wi-Fi 6 w cenie",
+      "Bez limitu danych",
+      "Priorytetowe wsparcie",
+    ],
+    pricing: pricing(99, 114, 129, 69, 99, 199, 299, 399, 499),
+    featured: false,
+    order: 3,
+  },
+]
+
+// === TV DVB-C Packages ===
+export const dvbcPackages: TVPackage[] = [
+  {
+    id: "tv-dvbc-mini",
+    name: "MINI",
+    type: "dvb_c",
+    tagline: "Podstawowa telewizja kablowa — najważniejsze kanały",
+    channels: 46,
+    features: [
+      "46 kanałów HD i SD",
+      "TVP, Polsat, TVN i więcej",
+      "Bez potrzeby internetu",
+    ],
+    pricing: pricing(35, 45, 55, 99, 99, 99, 1.23, 1.23, 1.23),
+    featured: false,
+    order: 1,
+  },
+  {
+    id: "tv-dvbc-komfort",
+    name: "Komfort",
+    type: "dvb_c",
+    tagline: "Rozbudowana telewizja — coś dla każdego",
+    channels: 113,
+    features: [
+      "113 kanałów HD i SD",
+      "Kanały rozrywkowe i filmowe",
+      "Kanały sportowe",
+      "Bez potrzeby internetu",
+    ],
+    pricing: pricing(59, 69, 79, 99, 99, 99, 1.23, 1.23, 1.23),
+    featured: true,
+    order: 2,
+  },
+  {
+    id: "tv-dvbc-max",
+    name: "MAX",
+    type: "dvb_c",
+    tagline: "Bogaty pakiet kanałów — filmy, sport, rozrywka",
+    channels: 130,
+    features: [
+      "130 kanałów HD i SD",
+      "Kanały premium",
+      "Sport w HD",
+      "Kanały dokumentalne i naukowe",
+      "Bez potrzeby internetu",
+    ],
+    pricing: pricing(79, 89, 99, 99, 99, 99, 1.23, 1.23, 1.23),
     featured: false,
     order: 3,
   },
   {
-    id: "gpon-1000",
-    name: "Ultra",
-    technology: "gpon",
-    tagline: "Maksimum mocy — bez kompromisów",
-    speedDown: 1000,
-    speedUp: 500,
+    id: "tv-dvbc-premium",
+    name: "Premium",
+    type: "dvb_c",
+    tagline: "Pełnia rozrywki — wszystkie kanały w najlepszej jakości",
+    channels: 137,
     features: [
-      "Prędkość do 1 Gb/s",
-      "Router Wi-Fi 6E w cenie",
-      "Bez limitu danych",
-      "Dedykowany opiekun klienta",
-      "Symetryczny upload 500 Mb/s",
-      "Gwarancja najniższego pingu",
+      "137 kanałów HD i SD",
+      "Pakiet CANAL+ w cenie",
+      "Sport w HD",
+      "Filmy i seriale",
+      "Bez potrzeby internetu",
     ],
-    pricing: pricing(149, 159, 179),
+    pricing: pricing(119, 129, 139, 99, 99, 99, 1.23, 1.23, 1.23),
     featured: false,
     order: 4,
   },
 ]
 
-// === BSA (via Orange) ===
-export const bsaPackages: InternetPackage[] = [
-  {
-    id: "bsa-100",
-    name: "Start BSA",
-    technology: "bsa",
-    tagline: "Internet światłowodowy przez sieć Orange",
-    speedDown: 100,
-    speedUp: 20,
-    features: [
-      "Prędkość do 100 Mb/s",
-      "Router Wi-Fi w cenie",
-      "Bez limitu danych",
-      "Wsparcie techniczne 24/7",
-    ],
-    pricing: pricing(65, 75, 85),
-    featured: false,
-    order: 1,
-  },
-  {
-    id: "bsa-300",
-    name: "Standard BSA",
-    technology: "bsa",
-    tagline: "Szybki internet dla rodziny przez sieć Orange",
-    speedDown: 300,
-    speedUp: 40,
-    features: [
-      "Prędkość do 300 Mb/s",
-      "Router Wi-Fi 6 w cenie",
-      "Bez limitu danych",
-      "Streaming 4K bez buforowania",
-    ],
-    pricing: pricing(95, 105, 115),
-    featured: true,
-    order: 2,
-  },
-  {
-    id: "bsa-600",
-    name: "Premium BSA",
-    technology: "bsa",
-    tagline: "Wydajny internet światłowodowy przez sieć Orange",
-    speedDown: 600,
-    speedUp: 80,
-    features: [
-      "Prędkość do 600 Mb/s",
-      "Router Wi-Fi 6 w cenie",
-      "Bez limitu danych",
-      "Priorytetowe wsparcie",
-    ],
-    pricing: pricing(129, 139, 149),
-    featured: false,
-    order: 3,
-  },
-]
-
-// === DOCSIS (Cable) ===
-export const docsisPackages: InternetPackage[] = [
-  {
-    id: "docsis-100",
-    name: "Start Kablowy",
-    technology: "docsis",
-    tagline: "Internet kablowy — sprawdzona technologia",
-    speedDown: 100,
-    speedUp: 10,
-    features: [
-      "Prędkość do 100 Mb/s",
-      "Router Wi-Fi w cenie",
-      "Bez limitu danych",
-      "Wsparcie techniczne 24/7",
-    ],
-    pricing: pricing(55, 65, 75),
-    featured: false,
-    order: 1,
-  },
-  {
-    id: "docsis-250",
-    name: "Standard Kablowy",
-    technology: "docsis",
-    tagline: "Solidny internet kablowy dla całej rodziny",
-    speedDown: 250,
-    speedUp: 25,
-    features: [
-      "Prędkość do 250 Mb/s",
-      "Router Wi-Fi w cenie",
-      "Bez limitu danych",
-      "Streaming HD i 4K",
-    ],
-    pricing: pricing(79, 89, 99),
-    featured: true,
-    order: 2,
-  },
-]
-
-// === TV Packages ===
+// === TV IPTV Packages ===
 export const iptvPackages: TVPackage[] = [
   {
-    id: "tv-iptv-basic",
-    name: "TV Start",
+    id: "tv-iptv-mini",
+    name: "MINI",
     type: "iptv",
-    tagline: "Podstawowa rozrywka — wiadomości, sport, filmy",
-    channels: 60,
+    tagline: "Podstawowa telewizja IPTV — najważniejsze kanały",
+    channels: 46,
     features: [
-      "60+ kanałów",
-      "Kanały HD w pakiecie",
+      "46 kanałów HD i SD",
       "TVP, Polsat, TVN i więcej",
       "Przewodnik elektroniczny EPG",
+      "Wymagany internet",
     ],
-    pricing: pricing(35, 39, 45),
+    pricing: pricing(45, 55, 65, 0, 0, 0, 0, 0, 0),
     featured: false,
     order: 1,
   },
   {
-    id: "tv-iptv-standard",
-    name: "TV Rodzinny",
+    id: "tv-iptv-komfort",
+    name: "Komfort",
     type: "iptv",
-    tagline: "Coś dla każdego — rozbudowany pakiet kanałów",
-    channels: 110,
+    tagline: "Rozbudowana telewizja IPTV — coś dla każdego",
+    channels: 113,
     features: [
-      "110+ kanałów",
-      "Kanały premium (Canal+, HBO)",
+      "113 kanałów HD i SD",
+      "Kanały rozrywkowe i filmowe",
       "Kanały sportowe",
       "Nagrywanie programów (PVR)",
-      "Aplikacja mobilna",
+      "Wymagany internet",
     ],
-    pricing: pricing(55, 59, 65),
+    pricing: pricing(69, 79, 89, 0, 0, 0, 0, 0, 0),
     featured: true,
     order: 2,
+  },
+  {
+    id: "tv-iptv-max",
+    name: "MAX",
+    type: "iptv",
+    tagline: "Bogaty pakiet IPTV — filmy, sport, rozrywka",
+    channels: 130,
+    features: [
+      "130 kanałów HD i SD",
+      "Kanały premium",
+      "Sport w HD",
+      "Timeshift i nagrywanie",
+      "Wymagany internet",
+    ],
+    pricing: pricing(89, 99, 109, 0, 0, 0, 0, 0, 0),
+    featured: false,
+    order: 3,
   },
   {
     id: "tv-iptv-premium",
-    name: "TV Premium",
+    name: "Premium",
     type: "iptv",
-    tagline: "Pełnia rozrywki — wszystkie kanały, najlepsza jakość",
-    channels: 160,
+    tagline: "Pełnia rozrywki IPTV — wszystkie kanały w najlepszej jakości",
+    channels: 137,
     features: [
-      "160+ kanałów HD i 4K",
-      "Wszystkie pakiety premium",
-      "Canal+, HBO, Netflix basic",
-      "Sport w 4K",
-      "Timeshift i nagrywanie",
+      "137 kanałów HD i SD",
+      "Pakiet CANAL+ w cenie",
+      "Sport w HD",
       "3 urządzenia jednocześnie",
+      "Wymagany internet",
     ],
-    pricing: pricing(79, 85, 95),
+    pricing: pricing(129, 139, 149, 0, 0, 0, 0, 0, 0),
     featured: false,
-    order: 3,
+    order: 4,
   },
 ]
 
-export const cableTVPackages: TVPackage[] = [
+// === TV Addons ===
+export const tvAddons: TVAddon[] = [
   {
-    id: "tv-cable-basic",
-    name: "TV Kablowa",
-    type: "cable",
-    tagline: "Tradycyjna telewizja kablowa — prosta i niezawodna",
-    channels: 50,
-    features: [
-      "50+ kanałów",
-      "Jakość cyfrowa HD",
-      "Bez potrzeby dekodera",
-      "Prosty sygnał kablowy",
-    ],
-    pricing: pricing(30, 35, 40),
-    featured: false,
-    order: 1,
+    id: "canal-plus-dvbc",
+    name: "CANAL+",
+    type: "dvb_c",
+    tagline: "7 kanałów CANAL+ — kino, sport, seriale",
+    channels: 7,
+    monthlyPrice: 49,
+    pricing: pricing(49, 59, 69, 99, 99, 99, 0, 0, 0),
+  },
+  {
+    id: "canal-plus-iptv",
+    name: "CANAL+",
+    type: "iptv",
+    tagline: "7 kanałów CANAL+ — kino, sport, seriale",
+    channels: 7,
+    monthlyPrice: 59,
+    pricing: pricing(59, 69, 79, 0, 0, 0, 0, 0, 0),
+  },
+  {
+    id: "multiroom-dvbc",
+    name: "Multiroom",
+    type: "dvb_c",
+    monthlyPrice: 10,
+  },
+  {
+    id: "multiroom-iptv",
+    name: "Multiroom",
+    type: "iptv",
+    monthlyPrice: 15,
   },
 ]
 
 // === Lookup helpers ===
 export const allInternetPackages: InternetPackage[] = [
-  ...gponPackages,
-  ...bsaPackages,
-  ...docsisPackages,
+  ...ftthDomPackages,
+  ...ftthBlokPackages,
+  ...ftthSyntisPackages,
 ]
 
 export const allTVPackages: TVPackage[] = [
+  ...dvbcPackages,
   ...iptvPackages,
-  ...cableTVPackages,
 ]
 
 export function getInternetPackagesForTech(
@@ -303,14 +388,12 @@ export function getInternetPackagesForTech(
   return allInternetPackages.filter((p) => p.technology === tech)
 }
 
-export function getTVPackagesForAddress(
-  technologies: TechCategory[]
+export function getTVPackagesForType(
+  type: TVDeliveryType
 ): TVPackage[] {
-  const available = [...iptvPackages]
-  if (technologies.includes("docsis")) {
-    available.push(...cableTVPackages)
-  }
-  return available.sort((a, b) => a.order - b.order)
+  return allTVPackages
+    .filter((p) => p.type === type)
+    .sort((a, b) => a.order - b.order)
 }
 
 export function getInternetPackageById(
@@ -323,32 +406,36 @@ export function getTVPackageById(id: string): TVPackage | undefined {
   return allTVPackages.find((p) => p.id === id)
 }
 
+export function getTVAddonsForType(type: TVDeliveryType): TVAddon[] {
+  return tvAddons.filter((a) => a.type === type)
+}
+
+/** @deprecated Use getTVAddonsForType instead */
+export function getTVAddonForType(type: TVDeliveryType): TVAddon | undefined {
+  return tvAddons.find((a) => a.type === type)
+}
+
 // Technology display metadata
 export const technologyMeta: Record<
   TechCategory,
   { label: string; shortLabel: string; description: string }
 > = {
-  gpon: {
-    label: "Internet Światłowodowy",
-    shortLabel: "Światłowód",
+  ftth_dom: {
+    label: "Światłowód — Dom jednorodzinny",
+    shortLabel: "FTTH Dom",
     description:
-      "Bezpośrednie połączenie światłowodowe GPON — najwyższe prędkości i stabilność",
+      "Bezpośrednie połączenie światłowodowe do domu jednorodzinnego — najwyższe prędkości i stabilność",
   },
-  bsa: {
-    label: "Internet Światłowodowy BSA",
-    shortLabel: "Światłowód BSA",
+  ftth_blok: {
+    label: "Światłowód — Budynek wielorodzinny",
+    shortLabel: "FTTH Blok",
     description:
-      "Internet światłowodowy realizowany przez sieć Orange z obsługą TV-EURO-SAT",
+      "Internet światłowodowy do budynku wielorodzinnego z atrakcyjnymi cenami",
   },
-  docsis: {
-    label: "Internet Kablowy",
-    shortLabel: "Kablowy",
+  ftth_syntis: {
+    label: "Światłowód — FTTH Syntis",
+    shortLabel: "FTTH Syntis",
     description:
-      "Sprawdzony internet kablowy DOCSIS z możliwością telewizji kablowej",
-  },
-  radio: {
-    label: "Internet Radiowy",
-    shortLabel: "Radio",
-    description: "Technologia radiowa FWA — w trakcie wycofywania",
+      "Internet światłowodowy realizowany przez infrastrukturę innego operatora",
   },
 }

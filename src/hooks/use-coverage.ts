@@ -3,37 +3,44 @@ import type {
   CoverageCity,
   CoverageCheckResult,
   TechCategory,
+  TVDeliveryType,
 } from "@/types"
 
-// Map database technology to frontend TechCategory
-function mapTechnology(medium: string, technology: string): TechCategory {
-  const mediumLower = medium.toLowerCase()
-  const techLower = technology.toLowerCase()
-
-  if (mediumLower.includes("radiowe") || mediumLower.includes("fwa")) {
-    return "radio"
+// Map database medium (column K) to frontend TechCategory
+// Returns null for DOCSIS-only addresses (TV only, no internet)
+function mapTechnology(medium: string): TechCategory | null {
+  const m = medium.trim().toUpperCase()
+  switch (m) {
+    case "GPON":
+      return "ftth_dom"
+    case "GPON BSA":
+      return "ftth_syntis"
+    case "GPON BLOK":
+      return "ftth_blok"
+    case "DOCSIS/GPON BLOK":
+      return "ftth_blok"
+    case "DOCSIS":
+      return null // TV DVB-C only, no internet packages
+    default:
+      return "ftth_dom"
   }
+}
 
-  if (mediumLower.includes("kablowe") || techLower.includes("docsis")) {
-    return "docsis"
+// Map database medium to TV delivery type(s)
+function mapTVDeliveryTypes(medium: string): TVDeliveryType[] {
+  const m = medium.trim().toUpperCase()
+  switch (m) {
+    case "GPON":
+    case "GPON BSA":
+    case "GPON BLOK":
+      return ["iptv"]
+    case "DOCSIS":
+      return ["dvb_c"]
+    case "DOCSIS/GPON BLOK":
+      return ["iptv", "dvb_c"]
+    default:
+      return ["iptv"]
   }
-
-  // Fiber optic
-  if (techLower === "gpon") {
-    return "gpon"
-  }
-
-  // BSA (other fiber via Orange network)
-  if (techLower === "inna" || mediumLower.includes("bsa")) {
-    return "bsa"
-  }
-
-  // Default to gpon for unknown fiber
-  if (mediumLower.includes("wiat")) {
-    return "gpon"
-  }
-
-  return "gpon"
 }
 
 function normalize(text: string): string {
@@ -200,21 +207,39 @@ export async function checkCoverageFromDB(
       address: { city, street, building },
       technologies: [],
       maxSpeeds: {},
+      internetAvailable: false,
+      tvAvailable: false,
+      tvDeliveryTypes: [],
       message:
         "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
     }
   }
 
+  // Determine internet and TV availability from database rows
+  let tvAvailable = false
+  let internetAvailable = false
+  const tvTypes = new Set<TVDeliveryType>()
+
   // Group technologies and speeds
   const techMap = new Map<TechCategory, { down: number; up: number }>()
-  let hasOnlyRadio = true
 
   for (const row of data) {
-    const tech = mapTechnology(row.medium || "", row.technology || "")
-
-    if (tech !== "radio") {
-      hasOnlyRadio = false
+    // Check TV availability from database column
+    if (row.tv_available === true || row.tv_available === "TAK") {
+      tvAvailable = true
     }
+
+    // Collect TV delivery types from medium
+    for (const dt of mapTVDeliveryTypes(row.medium || "")) {
+      tvTypes.add(dt)
+    }
+
+    const tech = mapTechnology(row.medium || "")
+
+    // DOCSIS-only = TV only, no internet technology to map
+    if (tech === null) continue
+
+    internetAvailable = true
 
     const existing = techMap.get(tech)
     if (!existing || row.speed_down > existing.down) {
@@ -225,23 +250,26 @@ export async function checkCoverageFromDB(
     }
   }
 
-  // Filter out radio technology for display (it's being phased out)
-  const nonRadioTechs = Array.from(techMap.keys()).filter((t) => t !== "radio")
+  const technologies = Array.from(techMap.keys())
 
-  if (hasOnlyRadio) {
+  // Address found but no services available (shouldn't happen, but handle gracefully)
+  if (!internetAvailable && !tvAvailable) {
     return {
-      status: "radio_only",
+      status: "not_covered",
       address: { city, street, building },
       technologies: [],
       maxSpeeds: {},
+      internetAvailable: false,
+      tvAvailable: false,
+      tvDeliveryTypes: [],
       message:
-        "Pod Twoim adresem dostępna jest jedynie technologia radiowa, która jest wycofywana. Skontaktuj się z nami, aby omówić dostępne opcje.",
+        "Niestety, Twój adres nie jest jeszcze w naszym zasięgu. Zostaw dane kontaktowe — powiadomimy Cię, gdy rozszerzymy sieć w Twojej okolicy.",
     }
   }
 
   const maxSpeeds: Partial<Record<TechCategory, { down: number; up: number }>> =
     {}
-  for (const tech of nonRadioTechs) {
+  for (const tech of technologies) {
     const speeds = techMap.get(tech)
     if (speeds) {
       maxSpeeds[tech] = speeds
@@ -251,8 +279,15 @@ export async function checkCoverageFromDB(
   return {
     status: "covered",
     address: { city, street, building },
-    technologies: nonRadioTechs,
+    technologies,
     maxSpeeds,
-    message: "Twój adres jest w naszym zasięgu! Sprawdź dostępne pakiety.",
+    internetAvailable,
+    tvAvailable,
+    tvDeliveryTypes: Array.from(tvTypes),
+    message: tvAvailable && internetAvailable
+      ? "Twój adres jest w naszym zasięgu! Sprawdź dostępne pakiety."
+      : tvAvailable
+        ? "Pod Twoim adresem dostępna jest telewizja kablowa DVB-C."
+        : "Pod Twoim adresem dostępny jest internet światłowodowy.",
   }
 }

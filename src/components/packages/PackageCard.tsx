@@ -1,6 +1,8 @@
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Check, Wifi, Tv } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import ChannelListModal from "./ChannelListModal"
 import type { InternetPackage, TVPackage, ContractPeriod } from "@/types"
 
 interface PackageCardProps {
@@ -21,6 +23,7 @@ export default function PackageCard({
   const pricing =
     pkg.pricing.find((p) => p.period === selectedPeriod) || pkg.pricing[0]
   const internet = isInternet(pkg)
+  const [showChannelModal, setShowChannelModal] = useState(false)
 
   return (
     <motion.div
@@ -68,7 +71,7 @@ export default function PackageCard({
           </div>
         ) : (
           <div className="text-3xl sm:text-4xl font-extrabold text-foreground">
-            {(pkg as TVPackage).channels}+{" "}
+            {(pkg as TVPackage).channels}{" "}
             <span className="text-lg font-semibold text-muted-foreground">
               kanałów
             </span>
@@ -96,10 +99,13 @@ export default function PackageCard({
         <p>
           Podłączenie:{" "}
           {pricing.installationFee === 0 ? (
-            <span className="text-green-600 dark:text-green-400 font-medium">Gratis</span>
+            <span className="text-green-600 dark:text-green-400 font-medium">Gratis*</span>
           ) : (
-            `${pricing.installationFee} zł`
+            `${pricing.installationFee} zł*`
           )}
+        </p>
+        <p className="text-[10px] text-muted-foreground/70 italic">
+          * opłata podlega indywidualnej ocenie
         </p>
       </div>
 
@@ -117,6 +123,29 @@ export default function PackageCard({
           </li>
         ))}
       </ul>
+
+      {/* Channel list button — TV packages only */}
+      {!internet && (
+        <div className="mt-2 text-center">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowChannelModal(true)
+            }}
+            className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+          >
+            <Tv className="h-3.5 w-3.5" />
+            Lista kanałów ({(pkg as TVPackage).channels})
+          </button>
+          <ChannelListModal
+            packageId={pkg.id}
+            packageName={pkg.name}
+            channelCount={(pkg as TVPackage).channels}
+            isOpen={showChannelModal}
+            onClose={() => setShowChannelModal(false)}
+          />
+        </div>
+      )}
 
       {/* CTA */}
       <div className="mt-auto pt-6">

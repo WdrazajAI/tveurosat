@@ -58,7 +58,7 @@ export const internetPackageSchema = z.object({
     .min(2, "Slug jest za krótki")
     .regex(/^[a-z0-9-]+$/, "Slug może zawierać tylko małe litery, cyfry i myślniki"),
   name: z.string().min(2, "Nazwa jest za krótka").max(100, "Nazwa jest za długa"),
-  technology: z.enum(["gpon", "bsa", "docsis", "radio"], "Wybierz technologię"),
+  technology: z.enum(["ftth_dom", "ftth_blok", "ftth_syntis"], "Wybierz technologię"),
   tagline: z.string().min(5, "Opis jest za krótki").max(200, "Opis jest za długi"),
   speed_down: z.number().int().min(1, "Prędkość musi być > 0"),
   speed_up: z.number().int().min(1, "Prędkość musi być > 0"),
@@ -78,7 +78,7 @@ export const tvPackageSchema = z.object({
     .min(2, "Slug jest za krótki")
     .regex(/^[a-z0-9-]+$/, "Slug może zawierać tylko małe litery, cyfry i myślniki"),
   name: z.string().min(2, "Nazwa jest za krótka").max(100, "Nazwa jest za długa"),
-  type: z.enum(["iptv", "cable"], "Wybierz typ"),
+  type: z.enum(["iptv", "dvb_c"], "Wybierz typ"),
   tagline: z.string().min(5, "Opis jest za krótki").max(200, "Opis jest za długi"),
   channels: z.number().int().min(1, "Liczba kanałów musi być > 0"),
   features: z.array(z.string()).min(1, "Dodaj co najmniej jedną cechę"),
